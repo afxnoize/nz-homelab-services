@@ -5,4 +5,4 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/env kopia snapshot create --all
+ExecStart=kopia --config-file=%h/.config/kopia/vault-b2.config snapshot create --all
