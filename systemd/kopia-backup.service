@@ -1,0 +1,8 @@
+[Unit]
+Description=Kopia snapshot backup
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/env kopia snapshot create --all
