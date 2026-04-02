@@ -6,10 +6,11 @@ Kopia + Backblaze B2 による wisdom vault の定期バックアップ。
 
 | ファイル | 役割 |
 |---------|------|
-| `flake.nix` | kopia / sops / age / jq / just パッケージ提供 |
+| `flake.nix` | kopia / sops / age / yq / just パッケージ提供 |
 | `Justfile` | 操作コマンド定義 |
 | `secrets.yaml` | B2 接続情報（sops + age で暗号化） |
-| `policy.json` | 保持ポリシー設定 |
+| `policy.yaml` | 保持ポリシー設定 |
+| `sources.yaml` | バックアップ対象パス（gitignore） |
 | `systemd/` | systemd user unit（daily timer） |
 
 ## セットアップ
@@ -62,7 +63,7 @@ B2 接続 + ポリシー設定 + systemd timer 有効化を一発で実行する
 
 ## 保持ポリシー
 
-`policy.json` で管理。
+`policy.yaml` で管理。
 
 | 種別 | 世代数 |
 |------|--------|

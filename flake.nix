@@ -18,7 +18,7 @@
           pkgs.kopia
           pkgs.sops
           pkgs.age
-          pkgs.jq
+          pkgs.yq-go
           pkgs.just
         ];
       };

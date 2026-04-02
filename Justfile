@@ -1,12 +1,13 @@
 set dotenv-load := false
 
 secrets := env("VAULT_SECRETS", "./secrets.yaml")
-policy := env("VAULT_POLICY", "./policy.json")
+policy := env("VAULT_POLICY", "./policy.yaml")
+sources := env("VAULT_SOURCES", "./sources.yaml")
 config := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "kopia/vault-b2.config"
 unit_dir := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "systemd/user"
 kopia := "kopia --config-file=" + config
 
-# Connect to B2 repository + set retention policy
+# Connect to B2 repository + set retention policy + register sources
 connect:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -23,16 +24,22 @@ connect:
       --secret-access-key="$secret_key" \
       --password="$password"
     echo "==> Connected"
-    daily=$(jq -r '.["keep-daily"] // 0' {{ policy }})
-    weekly=$(jq -r '.["keep-weekly"] // 0' {{ policy }})
-    monthly=$(jq -r '.["keep-monthly"] // 0' {{ policy }})
-    annual=$(jq -r '.["keep-annual"] // 0' {{ policy }})
+    daily=$(yq '.keep-daily // 0' {{ policy }})
+    weekly=$(yq '.keep-weekly // 0' {{ policy }})
+    monthly=$(yq '.keep-monthly // 0' {{ policy }})
+    annual=$(yq '.keep-annual // 0' {{ policy }})
     echo "==> Setting retention policy (daily:$daily weekly:$weekly monthly:$monthly annual:$annual)"
     {{ kopia }} policy set --global \
       --keep-daily "$daily" \
       --keep-weekly "$weekly" \
       --keep-monthly "$monthly" \
       --keep-annual "$annual"
+    echo "==> Registering sources"
+    for src in $(yq '.[]' {{ sources }}); do
+      expanded=$(eval echo "$src")
+      echo "    $expanded"
+      {{ kopia }} snapshot create "$expanded" --force-hash-percent=0 || true
+    done
 
 # Install and enable systemd timer
 timer-on:
