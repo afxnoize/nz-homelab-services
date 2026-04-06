@@ -1,0 +1,17 @@
+[Unit]
+Requires=vaultwarden-ts.service
+After=vaultwarden-ts.service
+
+[Container]
+Image=docker.io/vaultwarden/server:latest
+AutoUpdate=registry
+Volume=vaultwarden-data.volume:/data
+Network=container:systemd-vaultwarden-ts
+Environment=SIGNUPS_ALLOWED=true
+Environment=DOMAIN=https://vaultwarden.REDACTED.ts.net
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

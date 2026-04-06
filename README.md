@@ -1,6 +1,6 @@
 # tool-vault-backup-kopia-b2
 
-Kopia + Backblaze B2 による wisdom vault の定期バックアップ。
+Kopia + Backblaze B2 による vault の定期バックアップ。
 
 ## 構成
 
