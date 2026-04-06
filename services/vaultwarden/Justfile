@@ -1,0 +1,41 @@
+set dotenv-load := false
+
+secrets := env("VAULT_SECRETS", "./secrets.yaml")
+quadlet_dir := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "containers/systemd"
+
+# Deploy quadlet files and reload systemd
+deploy:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    ts_authkey=$(sops -d --extract '["ts_authkey"]' {{ secrets }})
+    mkdir -p {{ quadlet_dir }}
+    echo "==> Generating vaultwarden-ts.container"
+    sed "s|__TS_AUTHKEY__|${ts_authkey}|" \
+      quadlet/vaultwarden-ts.container.tmpl > {{ quadlet_dir }}/vaultwarden-ts.container
+    echo "==> Copying quadlet files"
+    cp quadlet/vaultwarden.container {{ quadlet_dir }}/
+    cp quadlet/vaultwarden-ts-serve.json {{ quadlet_dir }}/
+    cp quadlet/vaultwarden-data.volume {{ quadlet_dir }}/
+    cp quadlet/vaultwarden-ts-state.volume {{ quadlet_dir }}/
+    systemctl --user daemon-reload
+    echo "==> Deployed"
+
+# Start vaultwarden
+start:
+    systemctl --user start vaultwarden
+
+# Stop vaultwarden
+stop:
+    systemctl --user stop vaultwarden
+
+# Show service status
+status:
+    -systemctl --user status vaultwarden vaultwarden-ts --no-pager
+
+# Show logs
+logs:
+    journalctl --user -u vaultwarden -u vaultwarden-ts --no-pager -n 50
+
+# Pull latest images
+update:
+    podman auto-update

@@ -1,5 +1,5 @@
 {
-  description = "Kopia B2 backup for wisdom vault";
+  description = "Host service management for vault";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";

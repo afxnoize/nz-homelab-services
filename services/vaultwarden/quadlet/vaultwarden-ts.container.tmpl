@@ -1,0 +1,14 @@
+[Container]
+Image=docker.io/tailscale/tailscale:latest
+Volume=vaultwarden-ts-state.volume:/var/lib/tailscale
+Environment=TS_AUTHKEY=__TS_AUTHKEY__
+Environment=TS_HOSTNAME=vaultwarden
+Environment=TS_SERVE_CONFIG=/config/serve.json
+Environment=TS_USERSPACE=true
+Volume=%h/.config/containers/systemd/vaultwarden-ts-serve.json:/config/serve.json:ro
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
