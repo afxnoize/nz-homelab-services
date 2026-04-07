@@ -69,14 +69,6 @@ B2 接続 + ポリシー設定 + systemd timer 有効化を一発で実行する
 
 ## 設計判断
 
-### kopia config の分離
-
-kopia はデフォルトで `~/.config/kopia/repository.config` を使うが、他の kopia 用途と競合するため `vault-b2.config` に分離している。Justfile 内の全コマンドは `--config-file=` で明示指定する。
-
-### systemd service の kopia パス解決
-
-`just backup timer-on` 実行時に `which kopia` で nix store 内のフルパスを解決し、`sed` で service ファイルに埋め込む。`/usr/bin/env kopia` では nix のパスが通らないため。
-
-### ポリシーの外部ファイル化
-
-保持ポリシーは `policy.yaml` で管理し、`just backup connect` 時に yq で読み取って kopia に設定する。バックアップ対象パスは `sources.yaml`（gitignore）で環境ごとに管理する。Justfile にハードコードしない。
+→ [ADR-003: kopia config ファイルの分離](../../docs/design-docs/adr.md#adr-003-kopia-config-ファイルの分離)
+→ [ADR-004: systemd service における kopia パス解決](../../docs/design-docs/adr.md#adr-004-systemd-service-における-kopia-パス解決)
+→ [ADR-005: バックアップポリシーの外部ファイル化](../../docs/design-docs/adr.md#adr-005-バックアップポリシーの外部ファイル化)

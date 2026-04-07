@@ -62,6 +62,12 @@ just vaultwarden <recipe>     # vaultwarden 操作
 ```
 Justfile                              # ルート: mod でサービスを束ねる
 flake.nix                             # 全サービス共通の devShell
+docs/
+└── design-docs/
+    ├── index.md                      # 設計文書カタログ
+    └── adr/
+        ├── README.md                 # ADR ガイド・テンプレート
+        └── {3桁連番}-{slug}.md       # 個別 ADR
 services/
 ├── backup-kopia-b2/                  # → README.md 参照
 │   ├── Justfile
@@ -75,9 +81,21 @@ services/
 
 ## 設計判断
 
-### モノレポ構成
+設計判断は ADR (Architecture Decision Records) で管理する。
 
-各サービスは `services/<name>/` に独立し、それぞれが Justfile + secrets.yaml + README.md を持つ。ルートの Justfile は `mod` 機能でサービスを束ね、`just <service> <recipe>` で操作する。サービス固有の設計判断は各 README.md に記載。
+- [docs/design-docs/adr/](docs/design-docs/adr/README.md) — ADR 一覧
+- [docs/design-docs/index.md](docs/design-docs/index.md) — 設計文書カタログ
+
+### Documentation-Code Coupling
+
+コード変更時、対応するドキュメントを同一コミットで更新する。
+
+| Code Change | Update Required |
+|---|---|
+| サービス追加/変更/削除 | AGENTS.md, docs/design-docs/ |
+| 設計判断 | docs/design-docs/adr/ に ADR ファイル追加 |
+| 依存関係の追加/変更 | AGENTS.md (ツールチェイン表) |
+| バグ修正（非自明なもの） | 該当サービスの README.md |
 
 ---
 
