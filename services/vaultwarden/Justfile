@@ -8,17 +8,26 @@ deploy:
     #!/usr/bin/env bash
     set -euo pipefail
     ts_authkey=$(sops -d --extract '["ts_authkey"]' {{ secrets }})
+    ts_domain=$(tailscale status --json | jq -r '.MagicDNSSuffix')
+    if [[ -z "${ts_domain}" || "${ts_domain}" == "null" ]]; then
+      echo "ERROR: Tailscale MagicDNS suffix を取得できなかった" >&2
+      exit 1
+    fi
     mkdir -p {{ quadlet_dir }}
     echo "==> Generating vaultwarden-ts.container"
     sed "s|__TS_AUTHKEY__|${ts_authkey}|" \
       quadlet/vaultwarden-ts.container.tmpl > {{ quadlet_dir }}/vaultwarden-ts.container
+    echo "==> Generating vaultwarden.container"
+    sed "s|__TS_DOMAIN__|${ts_domain}|" \
+      quadlet/vaultwarden.container.tmpl > {{ quadlet_dir }}/vaultwarden.container
+    echo "==> Generating vaultwarden-ts-serve.json"
+    sed "s|__TS_DOMAIN__|${ts_domain}|g" \
+      quadlet/vaultwarden-ts-serve.json.tmpl > {{ quadlet_dir }}/vaultwarden-ts-serve.json
     echo "==> Copying quadlet files"
-    cp quadlet/vaultwarden.container {{ quadlet_dir }}/
-    cp quadlet/vaultwarden-ts-serve.json {{ quadlet_dir }}/
     cp quadlet/vaultwarden-data.volume {{ quadlet_dir }}/
     cp quadlet/vaultwarden-ts-state.volume {{ quadlet_dir }}/
     systemctl --user daemon-reload
-    echo "==> Deployed"
+    echo "==> Deployed (domain: vaultwarden.${ts_domain})"
 
 # Start vaultwarden
 start:
