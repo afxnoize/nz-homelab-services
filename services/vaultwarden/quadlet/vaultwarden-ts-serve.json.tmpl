@@ -5,7 +5,7 @@
     }
   },
   "Web": {
-    "vaultwarden.__TS_DOMAIN__:443": {
+    "vaultwarden.{{ .Env.TS_DOMAIN }}:443": {
       "Handlers": {
         "/": {
           "Proxy": "http://127.0.0.1:80"

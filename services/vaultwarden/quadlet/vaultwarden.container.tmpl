@@ -8,7 +8,7 @@ AutoUpdate=registry
 Volume=vaultwarden-data.volume:/data
 Network=container:systemd-vaultwarden-ts
 Environment=SIGNUPS_ALLOWED=true
-Environment=DOMAIN=https://vaultwarden.__TS_DOMAIN__
+Environment=DOMAIN=https://vaultwarden.{{ .Env.TS_DOMAIN }}
 
 [Service]
 Restart=always
