@@ -1,3 +1,6 @@
+default:
+    @just --list
+
 set dotenv-load := false
 
 secrets := env("VAULT_SECRETS", "./secrets.yaml")
@@ -77,3 +80,11 @@ status:
     {{ kopia }} repository status || echo "Not connected"
     @echo ""
     -{{ kopia }} snapshot list --all
+
+# Show logs
+logs:
+    journalctl --user -u kopia-backup --no-pager -n 50
+
+# Follow logs
+logs-follow:
+    journalctl --user -u kopia-backup -f

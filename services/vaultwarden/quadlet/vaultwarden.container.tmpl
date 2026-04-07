@@ -5,10 +5,16 @@ After=vaultwarden-ts.service
 [Container]
 Image=docker.io/vaultwarden/server:latest
 AutoUpdate=registry
+LogDriver=journald
 Volume=vaultwarden-data.volume:/data
 Network=container:systemd-vaultwarden-ts
 Environment=SIGNUPS_ALLOWED=true
 Environment=DOMAIN=https://vaultwarden.{{ .Env.TS_DOMAIN }}
+HealthCmd=curl -sf http://127.0.0.1:80/alive || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=40s
 
 [Service]
 Restart=always
