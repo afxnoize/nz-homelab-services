@@ -24,6 +24,7 @@
 | バックアップ       | Kopia          | `kopia` (via Justfile)   |
 | コンテナ           | Podman Quadlet | `systemctl --user`       |
 | シークレット暗号化 | SOPS + age     | `sops --encrypt / --decrypt` |
+| テンプレート展開   | gomplate       | `gomplate -f in.tmpl -o out` |
 | YAML/JSON 操作     | yq             | `yq`                     |
 
 ### 操作

@@ -1,7 +1,7 @@
 [Container]
 Image=docker.io/tailscale/tailscale:latest
 Volume=vaultwarden-ts-state.volume:/var/lib/tailscale
-Environment=TS_AUTHKEY=__TS_AUTHKEY__
+Environment=TS_AUTHKEY={{ .Env.ts_authkey }}
 Environment=TS_HOSTNAME=vaultwarden
 Environment=TS_SERVE_CONFIG=/config/serve.json
 Environment=TS_USERSPACE=true

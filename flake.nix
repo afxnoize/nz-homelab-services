@@ -20,6 +20,7 @@
           pkgs.age
           pkgs.yq-go
           pkgs.just
+          pkgs.gomplate
         ];
       };
     };
