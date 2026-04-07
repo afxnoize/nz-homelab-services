@@ -34,6 +34,7 @@ just                          # レシピ一覧
 just deploy-all               # 全サービス deploy
 just backup <recipe>          # kopia 操作
 just vaultwarden <recipe>     # vaultwarden 操作
+just gatus <recipe>           # gatus 操作
 ```
 
 ## 機能概要
@@ -42,6 +43,7 @@ just vaultwarden <recipe>     # vaultwarden 操作
 
 - [services/backup-kopia-b2/README.md](services/backup-kopia-b2/README.md) — Kopia + B2 定期バックアップ
 - [services/vaultwarden/README.md](services/vaultwarden/README.md) — Vaultwarden + Tailscale Serve
+- [services/gatus/README.md](services/gatus/README.md) — Gatus ヘルスチェック + Telegram 通知
 
 ## 技術スタック
 
@@ -50,6 +52,7 @@ just vaultwarden <recipe>     # vaultwarden 操作
 | バックアップ   | Kopia (S3 互換プロトコルで B2 に接続)    |
 | ストレージ     | Backblaze B2 (`nz-vault-backup` bucket)  |
 | パスワード管理 | Vaultwarden + Tailscale Serve            |
+| ヘルスチェック | Gatus + Telegram 通知                    |
 | シークレット   | SOPS (age 暗号化) → Git 管理            |
 | スケジュール   | systemd user timer (daily)               |
 | コンテナ       | Podman Quadlet (systemd 統合)            |
@@ -73,9 +76,14 @@ services/
 │   ├── Justfile
 │   ├── secrets.yaml / policy.yaml / sources.yaml
 │   └── systemd/
-└── vaultwarden/                      # → README.md 参照
+├── vaultwarden/                      # → README.md 参照
+│   ├── Justfile
+│   ├── secrets.yaml
+│   └── quadlet/
+└── gatus/                            # → README.md 参照
     ├── Justfile
     ├── secrets.yaml
+    ├── config.yaml.tmpl
     └── quadlet/
 ```
 

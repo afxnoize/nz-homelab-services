@@ -1,0 +1,35 @@
+storage:
+  type: sqlite
+  path: /data/gatus.db
+
+ui:
+  title: nz-homelab
+  header: nz-homelab Status
+
+alerting:
+  telegram:
+    token: "{{ .Env.TELEGRAM_BOT_TOKEN }}"
+    id: "{{ .Env.TELEGRAM_CHAT_ID }}"
+    default-alert:
+      failure-threshold: 3
+      success-threshold: 1
+      send-on-resolved: true
+
+endpoints:
+  - name: Vaultwarden
+    group: services
+    url: "https://vaultwarden.{{ .Env.TS_DOMAIN }}/alive"
+    interval: 30s
+    conditions:
+      - "[STATUS] == 200"
+    alerts:
+      - type: telegram
+
+  - name: Vaultwarden (Tailscale)
+    group: infrastructure
+    url: "https://vaultwarden.{{ .Env.TS_DOMAIN }}"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+    alerts:
+      - type: telegram

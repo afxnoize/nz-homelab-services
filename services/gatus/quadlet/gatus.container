@@ -1,0 +1,18 @@
+[Container]
+Image=ghcr.io/twin/gatus:stable
+AutoUpdate=registry
+LogDriver=journald
+PublishPort=127.0.0.1:8080:8080
+Volume=gatus-data.volume:/data
+Volume=%h/.config/containers/systemd/gatus-config.yaml:/config/config.yaml:ro
+HealthCmd=wget -qO- http://localhost:8080/health || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

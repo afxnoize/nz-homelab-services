@@ -36,6 +36,10 @@ start:
 stop:
     systemctl --user stop vaultwarden
 
+# Restart vaultwarden
+restart:
+    systemctl --user restart vaultwarden
+
 # Show service status
 status:
     -systemctl --user status vaultwarden vaultwarden-ts --no-pager

@@ -1,0 +1,55 @@
+default:
+    @just --list
+
+set dotenv-load := false
+
+secrets := env("VAULT_SECRETS", "./secrets.yaml")
+quadlet_dir := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "containers/systemd"
+
+# Deploy quadlet files and reload systemd
+deploy:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export TS_DOMAIN=$(tailscale status --json | jq -r '.MagicDNSSuffix')
+    if [[ -z "${TS_DOMAIN}" || "${TS_DOMAIN}" == "null" ]]; then
+      echo "ERROR: failed to get Tailscale MagicDNS suffix" >&2
+      exit 1
+    fi
+    mkdir -p {{ quadlet_dir }}
+    echo "==> Generating config from template"
+    sops exec-env {{ secrets }} ' \
+      gomplate -f config.yaml.tmpl -o {{ quadlet_dir }}/gatus-config.yaml \
+    '
+    echo "==> Copying quadlet files"
+    cp quadlet/gatus.container {{ quadlet_dir }}/
+    cp quadlet/gatus-data.volume {{ quadlet_dir }}/
+    systemctl --user daemon-reload
+    echo "==> Deployed"
+
+# Start gatus
+start:
+    systemctl --user start gatus
+
+# Stop gatus
+stop:
+    systemctl --user stop gatus
+
+# Restart gatus
+restart:
+    systemctl --user restart gatus
+
+# Show service status
+status:
+    -systemctl --user status gatus --no-pager
+
+# Show logs
+logs:
+    journalctl --user -u gatus --no-pager -n 50
+
+# Follow logs
+logs-follow:
+    journalctl --user -u gatus -f
+
+# Pull latest image
+update:
+    podman auto-update
