@@ -71,6 +71,4 @@ vaultwarden-data (volume)
 
 ## 設計判断
 
-### テンプレート管理
-
-`.tmpl` ファイルは Go テンプレート構文 (gomplate) で記述。`just vaultwarden deploy` 時に `sops exec-env` で secrets を環境変数に注入し、`tailscale status` で MagicDNS suffix を取得して gomplate で展開する。秘匿値がリポジトリに平文で残らない。
+→ [ADR-002: gomplate + sops exec-env によるテンプレート管理](../../docs/design-docs/adr.md#adr-002-gomplate--sops-exec-env-によるテンプレート管理)
