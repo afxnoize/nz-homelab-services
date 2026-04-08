@@ -1,0 +1,66 @@
+default:
+    @just --list
+
+set dotenv-load := false
+
+secrets := env("VAULT_SECRETS", "./secrets.yaml")
+quadlet_dir := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "containers/systemd"
+
+# Deploy quadlet files and reload systemd
+deploy:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export TS_DOMAIN=$(tailscale status --json | jq -r '.MagicDNSSuffix')
+    if [[ -z "${TS_DOMAIN}" || "${TS_DOMAIN}" == "null" ]]; then
+      echo "ERROR: failed to get Tailscale MagicDNS suffix" >&2
+      exit 1
+    fi
+    mkdir -p {{ quadlet_dir }}
+    echo "==> Generating quadlet files from templates"
+    sops exec-env {{ secrets }} ' \
+      gomplate -f quadlet/adguard-home-ts.container.tmpl  -o {{ quadlet_dir }}/adguard-home-ts.container && \
+      gomplate -f quadlet/adguard-home.container.tmpl      -o {{ quadlet_dir }}/adguard-home.container && \
+      gomplate -f quadlet/adguard-home-ts-serve.json.tmpl  -o {{ quadlet_dir }}/adguard-home-ts-serve.json \
+    '
+    echo "==> Copying quadlet files"
+    cp quadlet/adguard-home-data.volume     {{ quadlet_dir }}/
+    cp quadlet/adguard-home-ts-state.volume {{ quadlet_dir }}/
+    mkdir -p {{ quadlet_dir }}/adguard-home-conf
+    echo "==> Syncing AdGuardHome.yaml (preserving persistent clients)"
+    CONF="{{ quadlet_dir }}/adguard-home-conf/AdGuardHome.yaml"
+    if [ -f "$CONF" ]; then
+      yq '.clients.persistent = load("'"$CONF"'").clients.persistent' AdGuardHome.yaml > "$CONF.tmp" && mv "$CONF.tmp" "$CONF"
+    else
+      cp AdGuardHome.yaml "$CONF"
+    fi
+    systemctl --user daemon-reload
+    echo "==> Deployed (Web UI: https://adguard-home.${TS_DOMAIN})"
+    echo "==> DNS: bind address を 0.0.0.0:53, Web UI を 0.0.0.0:3000 に設定してください"
+
+# Start adguard-home
+start:
+    systemctl --user start adguard-home
+
+# Stop adguard-home
+stop:
+    systemctl --user stop adguard-home
+
+# Restart adguard-home
+restart:
+    systemctl --user restart adguard-home
+
+# Show service status
+status:
+    -systemctl --user status adguard-home adguard-home-ts --no-pager
+
+# Show logs
+logs:
+    journalctl --user -u adguard-home -u adguard-home-ts --no-pager -n 50
+
+# Follow logs
+logs-follow:
+    journalctl --user -u adguard-home -u adguard-home-ts -f
+
+# Pull latest images
+update:
+    podman auto-update

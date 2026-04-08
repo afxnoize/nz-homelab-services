@@ -1,0 +1,22 @@
+[Unit]
+Requires=adguard-home-ts.service
+After=adguard-home-ts.service
+
+[Container]
+Image=docker.io/adguard/adguardhome:latest
+AutoUpdate=registry
+LogDriver=journald
+Volume=adguard-home-data.volume:/opt/adguardhome/data
+Volume=%h/.config/containers/systemd/adguard-home-conf:/opt/adguardhome/conf
+Network=container:systemd-adguard-home-ts
+HealthCmd=wget -q --spider http://127.0.0.1:3000 || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

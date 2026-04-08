@@ -48,6 +48,7 @@ just gatus <recipe>           # gatus 操作
 - [services/backup-kopia-b2/README.md](services/backup-kopia-b2/README.md) — Kopia + B2 定期バックアップ
 - [services/vaultwarden/README.md](services/vaultwarden/README.md) — Vaultwarden + Tailscale Serve
 - [services/gatus/README.md](services/gatus/README.md) — Gatus ヘルスチェック + Telegram 通知
+- [services/adguard-home/README.md](services/adguard-home/README.md) — AdGuard Home DNS + Tailscale Serve
 
 ## 技術スタック
 
@@ -57,6 +58,7 @@ just gatus <recipe>           # gatus 操作
 | ストレージ     | Backblaze B2 (`nz-vault-backup` bucket)  |
 | パスワード管理 | Vaultwarden + Tailscale Serve            |
 | ヘルスチェック | Gatus + Telegram 通知                    |
+| DNS フィルタ   | AdGuard Home + Tailscale Serve           |
 | シークレット   | SOPS (age 暗号化) → Git 管理            |
 | スケジュール   | systemd user timer (daily)               |
 | コンテナ       | Podman Quadlet (systemd 統合)            |
@@ -87,10 +89,14 @@ services/
 │   ├── Justfile
 │   ├── secrets.yaml
 │   └── quadlet/
-└── gatus/                            # → README.md 参照
+├── gatus/                            # → README.md 参照
+│   ├── Justfile
+│   ├── secrets.yaml
+│   ├── config.yaml.tmpl
+│   └── quadlet/
+└── adguard-home/                     # → README.md 参照
     ├── Justfile
     ├── secrets.yaml
-    ├── config.yaml.tmpl
     └── quadlet/
 ```
 
