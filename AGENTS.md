@@ -82,22 +82,9 @@ docs/
         └── {3桁連番}-{slug}.md       # 個別 ADR
 services/
 ├── backup-kopia-b2/                  # → README.md 参照
-│   ├── Justfile
-│   ├── secrets.yaml / policy.yaml / sources.yaml
-│   └── systemd/
 ├── vaultwarden/                      # → README.md 参照
-│   ├── Justfile
-│   ├── secrets.yaml
-│   └── quadlet/
 ├── gatus/                            # → README.md 参照
-│   ├── Justfile
-│   ├── secrets.yaml
-│   ├── config.yaml.tmpl
-│   └── quadlet/
 └── adguard-home/                     # → README.md 参照
-    ├── Justfile
-    ├── secrets.yaml
-    └── quadlet/
 ```
 
 ## 設計判断

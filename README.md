@@ -8,6 +8,8 @@
 |---------|------|
 | [backup-kopia-b2](services/backup-kopia-b2/) | Kopia + B2 による vault の定期バックアップ |
 | [vaultwarden](services/vaultwarden/) | Vaultwarden + Tailscale Serve |
+| [gatus](services/gatus/) | Gatus ヘルスチェック + Telegram 通知 |
+| [adguard-home](services/adguard-home/) | AdGuard Home DNS + Tailscale Serve |
 
 ## セットアップ
 
@@ -24,6 +26,8 @@ just deploy-all          # 全サービス deploy
 just status-all          # 全サービス状態確認
 just backup <recipe>     # kopia 操作
 just vaultwarden <recipe> # vaultwarden 操作
+just gatus <recipe>      # gatus 操作
+just adguard-home <recipe> # adguard-home 操作
 ```
 
 各サービスの詳細は `services/*/README.md` を参照。
