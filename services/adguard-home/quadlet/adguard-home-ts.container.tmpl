@@ -1,0 +1,21 @@
+[Container]
+Image=docker.io/tailscale/tailscale:latest
+LogDriver=journald
+Volume=adguard-home-ts-state.volume:/var/lib/tailscale
+Environment=TS_AUTHKEY={{ .Env.ts_authkey }}
+Environment=TS_HOSTNAME=adguard-home
+Environment=TS_SERVE_CONFIG=/config/serve.json
+Environment=TS_USERSPACE=true
+Environment=TS_EXTRA_ARGS=--accept-dns=false
+Volume=%h/.config/containers/systemd/adguard-home-ts-serve.json:/config/serve.json:ro
+HealthCmd=tailscale status --json | grep -q '"Online": true' || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
