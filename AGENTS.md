@@ -37,6 +37,10 @@ just vaultwarden <recipe>     # vaultwarden 操作
 just gatus <recipe>           # gatus 操作
 ```
 
+## アーキテクチャ
+
+→ [ARCHITECTURE.md](ARCHITECTURE.md) — 設計思想・パターンカタログ・サービス追加手順
+
 ## 機能概要
 
 ホストサービスの管理モノレポ。各サービスは `services/` 以下に独立したディレクトリを持ち、Justfile で操作を定義する。
@@ -65,7 +69,10 @@ just gatus <recipe>           # gatus 操作
 ```
 Justfile                              # ルート: mod でサービスを束ねる
 flake.nix                             # 全サービス共通の devShell
+ARCHITECTURE.md                       # 設計思想・パターンカタログ
 docs/
+├── cheatsheet.md                     # 運用クイックリファレンス
+├── knowledge.md                      # 既知の落とし穴
 └── design-docs/
     ├── index.md                      # 設計文書カタログ
     └── adr/
@@ -91,8 +98,11 @@ services/
 
 設計判断は ADR (Architecture Decision Records) で管理する。
 
+- [ARCHITECTURE.md](ARCHITECTURE.md) — 設計パターンと設計思想
 - [docs/design-docs/adr/](docs/design-docs/adr/README.md) — ADR 一覧
 - [docs/design-docs/index.md](docs/design-docs/index.md) — 設計文書カタログ
+- [docs/cheatsheet.md](docs/cheatsheet.md) — 運用クイックリファレンス
+- [docs/knowledge.md](docs/knowledge.md) — 既知の落とし穴
 
 ### Documentation-Code Coupling
 
@@ -104,6 +114,8 @@ services/
 | 設計判断 | docs/design-docs/adr/ に ADR ファイル追加 |
 | 依存関係の追加/変更 | AGENTS.md (ツールチェイン表) |
 | バグ修正（非自明なもの） | 該当サービスの README.md |
+| 新しいパターンの適用 | ARCHITECTURE.md |
+| 運用上の落とし穴の発見 | docs/knowledge.md |
 
 ---
 
