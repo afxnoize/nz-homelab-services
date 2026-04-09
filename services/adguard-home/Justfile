@@ -6,7 +6,12 @@ set dotenv-load := false
 secrets := env("VAULT_SECRETS", "./secrets.yaml")
 quadlet_dir := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "containers/systemd"
 
+####################
+# Lifecycle
+####################
+
 # Deploy quadlet files and reload systemd
+[group('lifecycle')]
 deploy:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -43,37 +48,54 @@ deploy:
     echo "==> DNS: bind address を 0.0.0.0:53, Web UI を 0.0.0.0:3000 に設定してください"
 
 # systemctl --user start adguard-home adguard-home-querylog
+[group('lifecycle')]
 start:
     systemctl --user start adguard-home adguard-home-querylog
 
 # systemctl --user stop adguard-home-querylog adguard-home
+[group('lifecycle')]
 stop:
     systemctl --user stop adguard-home-querylog adguard-home
 
 # systemctl --user restart adguard-home adguard-home-querylog
+[group('lifecycle')]
 restart:
     systemctl --user restart adguard-home adguard-home-querylog
 
+####################
+# Observe
+####################
+
 # systemctl --user status adguard-home adguard-home-ts adguard-home-querylog --no-pager
+[group('observe')]
 status:
     -systemctl --user status adguard-home adguard-home-ts adguard-home-querylog --no-pager
 
-# journalctl --user -u adguard-home -u adguard-home-ts --no-pager -n 50
-logs:
-    journalctl --user -u adguard-home -u adguard-home-ts --no-pager -n 50
+# journalctl --user -u adguard-home -u adguard-home-ts --no-pager -n <count>
+[group('observe')]
+logs count="50":
+    journalctl --user -u adguard-home -u adguard-home-ts --no-pager -n {{ count }}
 
 # journalctl --user -u adguard-home -u adguard-home-ts -f
+[group('observe')]
 logs-follow:
     journalctl --user -u adguard-home -u adguard-home-ts -f
 
 # journalctl --user -u adguard-home-querylog --no-pager -n <count>
-logs-query count="50":
+[group('observe')]
+logs-querylog count="50":
     journalctl --user -u adguard-home-querylog --no-pager -n {{ count }}
 
 # journalctl --user -u adguard-home-querylog -f
-logs-query-follow:
+[group('observe')]
+logs-querylog-follow:
     journalctl --user -u adguard-home-querylog -f
 
+####################
+# Maintenance
+####################
+
 # podman auto-update
+[group('maintenance')]
 update:
     podman auto-update

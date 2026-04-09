@@ -6,7 +6,12 @@ set dotenv-load := false
 secrets := env("VAULT_SECRETS", "./secrets.yaml")
 quadlet_dir := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "containers/systemd"
 
+####################
+# Lifecycle
+####################
+
 # Deploy quadlet files and reload systemd
+[group('lifecycle')]
 deploy:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -29,29 +34,44 @@ deploy:
     echo "==> Deployed (domain: vaultwarden.${TS_DOMAIN})"
 
 # systemctl --user start vaultwarden
+[group('lifecycle')]
 start:
     systemctl --user start vaultwarden
 
 # systemctl --user stop vaultwarden
+[group('lifecycle')]
 stop:
     systemctl --user stop vaultwarden
 
 # systemctl --user restart vaultwarden
+[group('lifecycle')]
 restart:
     systemctl --user restart vaultwarden
 
+####################
+# Observe
+####################
+
 # systemctl --user status vaultwarden vaultwarden-ts --no-pager
+[group('observe')]
 status:
     -systemctl --user status vaultwarden vaultwarden-ts --no-pager
 
-# journalctl --user -u vaultwarden -u vaultwarden-ts --no-pager -n 50
-logs:
-    journalctl --user -u vaultwarden -u vaultwarden-ts --no-pager -n 50
+# journalctl --user -u vaultwarden -u vaultwarden-ts --no-pager -n <count>
+[group('observe')]
+logs count="50":
+    journalctl --user -u vaultwarden -u vaultwarden-ts --no-pager -n {{ count }}
 
 # journalctl --user -u vaultwarden -u vaultwarden-ts -f
+[group('observe')]
 logs-follow:
     journalctl --user -u vaultwarden -u vaultwarden-ts -f
 
+####################
+# Maintenance
+####################
+
 # podman auto-update
+[group('maintenance')]
 update:
     podman auto-update

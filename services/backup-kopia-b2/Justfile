@@ -10,7 +10,12 @@ config := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "kopia/vault-b2.conf
 unit_dir := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "systemd/user"
 kopia := "kopia --config-file=" + config
 
+####################
+# Lifecycle
+####################
+
 # Connect to B2 repository + set retention policy + register sources
+[group('lifecycle')]
 connect:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -45,6 +50,7 @@ connect:
     done
 
 # Install and enable systemd timer
+[group('lifecycle')]
 timer-on:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -59,6 +65,8 @@ timer-on:
     systemctl --user status kopia-backup.timer --no-pager
 
 # Disable and remove systemd timer
+[confirm("This will disable and remove the backup timer. Continue?")]
+[group('lifecycle')]
 timer-off:
     -systemctl --user disable --now kopia-backup.timer
     rm -f {{ unit_dir }}/kopia-backup.service {{ unit_dir }}/kopia-backup.timer
@@ -66,25 +74,38 @@ timer-off:
     @echo "==> Timer removed"
 
 # Connect + install timer
+[group('lifecycle')]
 deploy: connect timer-on
 
+####################
+# Operation
+####################
+
 # Create snapshots
+[group('operation')]
 backup:
     @echo "==> Creating snapshots"
     {{ kopia }} snapshot create --all
     @echo "==> Snapshot list"
     {{ kopia }} snapshot list --all
 
+####################
+# Observe
+####################
+
 # Show connection status and snapshots
+[group('observe')]
 status:
     {{ kopia }} repository status || echo "Not connected"
     @echo ""
     -{{ kopia }} snapshot list --all
 
-# journalctl --user -u kopia-backup --no-pager -n 50
-logs:
-    journalctl --user -u kopia-backup --no-pager -n 50
+# journalctl --user -u kopia-backup --no-pager -n <count>
+[group('observe')]
+logs count="50":
+    journalctl --user -u kopia-backup --no-pager -n {{ count }}
 
 # journalctl --user -u kopia-backup -f
+[group('observe')]
 logs-follow:
     journalctl --user -u kopia-backup -f
