@@ -81,15 +81,15 @@ logs count="50":
 logs-follow:
     journalctl --user -u adguard-home -u adguard-home-ts -f
 
-# journalctl --user -u adguard-home-querylog --no-pager -n <count>
+# journalctl --user -u adguard-home-querylog SYSLOG_IDENTIFIER=systemd-adguard-home-querylog -o cat --no-pager -n <count> | grep '^{'
 [group('observe')]
 logs-querylog count="50":
-    journalctl --user -u adguard-home-querylog --no-pager -n {{ count }}
+    journalctl --user -u adguard-home-querylog SYSLOG_IDENTIFIER=systemd-adguard-home-querylog -o cat --no-pager -n {{ count }} | grep '^{'
 
-# journalctl --user -u adguard-home-querylog -f
+# journalctl --user -u adguard-home-querylog SYSLOG_IDENTIFIER=systemd-adguard-home-querylog -o cat -f | grep --line-buffered '^{'
 [group('observe')]
 logs-querylog-follow:
-    journalctl --user -u adguard-home-querylog -f
+    journalctl --user -u adguard-home-querylog SYSLOG_IDENTIFIER=systemd-adguard-home-querylog -o cat -f | grep --line-buffered '^{'
 
 ####################
 # Maintenance
