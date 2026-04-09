@@ -1,0 +1,17 @@
+[Unit]
+Requires=adguard-home.service
+After=adguard-home.service
+
+[Container]
+Image=ghcr.io/fluent/fluent-bit:latest
+AutoUpdate=registry
+LogDriver=journald
+Volume=adguard-home-data.volume:/data:ro
+Volume=%h/.config/containers/systemd/adguard-home-fluent-bit:/fluent-bit/etc:ro
+HealthCmd=none
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
