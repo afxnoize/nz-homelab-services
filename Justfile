@@ -6,7 +6,12 @@ mod vaultwarden 'services/vaultwarden'
 mod gatus 'services/gatus'
 mod adguard-home 'services/adguard-home'
 
+####################
+# Orchestrate
+####################
+
 # Deploy all services
+[group('orchestrate')]
 deploy-all:
     just backup deploy
     just vaultwarden deploy
@@ -14,6 +19,7 @@ deploy-all:
     just adguard-home deploy
 
 # Show status of all services
+[group('orchestrate')]
 status-all:
     just backup status
     just vaultwarden status

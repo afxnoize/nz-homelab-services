@@ -6,7 +6,12 @@ set dotenv-load := false
 secrets := env("VAULT_SECRETS", "./secrets.yaml")
 quadlet_dir := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "containers/systemd"
 
+####################
+# Lifecycle
+####################
+
 # Deploy quadlet files and reload systemd
+[group('lifecycle')]
 deploy:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -27,29 +32,44 @@ deploy:
     echo "==> Deployed"
 
 # systemctl --user start gatus
+[group('lifecycle')]
 start:
     systemctl --user start gatus
 
 # systemctl --user stop gatus
+[group('lifecycle')]
 stop:
     systemctl --user stop gatus
 
 # systemctl --user restart gatus
+[group('lifecycle')]
 restart:
     systemctl --user restart gatus
 
+####################
+# Observe
+####################
+
 # systemctl --user status gatus --no-pager
+[group('observe')]
 status:
     -systemctl --user status gatus --no-pager
 
-# journalctl --user -u gatus --no-pager -n 50
-logs:
-    journalctl --user -u gatus --no-pager -n 50
+# journalctl --user -u gatus --no-pager -n <count>
+[group('observe')]
+logs count="50":
+    journalctl --user -u gatus --no-pager -n {{ count }}
 
 # journalctl --user -u gatus -f
+[group('observe')]
 logs-follow:
     journalctl --user -u gatus -f
 
+####################
+# Maintenance
+####################
+
 # podman auto-update
+[group('maintenance')]
 update:
     podman auto-update
