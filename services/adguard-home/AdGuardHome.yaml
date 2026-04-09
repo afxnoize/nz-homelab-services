@@ -90,7 +90,7 @@ tls:
   private_key_path: ""
   strict_sni_check: false
 querylog:
-  dir_path: ""
+  dir_path: /opt/adguardhome/work/data
   ignored: []
   interval: 720h
   size_memory: 1000
@@ -98,7 +98,7 @@ querylog:
   ignored_enabled: false
   file_enabled: true
 statistics:
-  dir_path: ""
+  dir_path: /opt/adguardhome/work/data
   ignored: []
   interval: 24h
   enabled: true
