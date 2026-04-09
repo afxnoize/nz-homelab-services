@@ -26,30 +26,30 @@ deploy:
     systemctl --user daemon-reload
     echo "==> Deployed"
 
-# Start gatus
+# systemctl --user start gatus
 start:
     systemctl --user start gatus
 
-# Stop gatus
+# systemctl --user stop gatus
 stop:
     systemctl --user stop gatus
 
-# Restart gatus
+# systemctl --user restart gatus
 restart:
     systemctl --user restart gatus
 
-# Show service status
+# systemctl --user status gatus --no-pager
 status:
     -systemctl --user status gatus --no-pager
 
-# Show logs
+# journalctl --user -u gatus --no-pager -n 50
 logs:
     journalctl --user -u gatus --no-pager -n 50
 
-# Follow logs
+# journalctl --user -u gatus -f
 logs-follow:
     journalctl --user -u gatus -f
 
-# Pull latest image
+# podman auto-update
 update:
     podman auto-update

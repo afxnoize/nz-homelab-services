@@ -28,30 +28,30 @@ deploy:
     systemctl --user daemon-reload
     echo "==> Deployed (domain: vaultwarden.${TS_DOMAIN})"
 
-# Start vaultwarden
+# systemctl --user start vaultwarden
 start:
     systemctl --user start vaultwarden
 
-# Stop vaultwarden
+# systemctl --user stop vaultwarden
 stop:
     systemctl --user stop vaultwarden
 
-# Restart vaultwarden
+# systemctl --user restart vaultwarden
 restart:
     systemctl --user restart vaultwarden
 
-# Show service status
+# systemctl --user status vaultwarden vaultwarden-ts --no-pager
 status:
     -systemctl --user status vaultwarden vaultwarden-ts --no-pager
 
-# Show logs
+# journalctl --user -u vaultwarden -u vaultwarden-ts --no-pager -n 50
 logs:
     journalctl --user -u vaultwarden -u vaultwarden-ts --no-pager -n 50
 
-# Follow logs
+# journalctl --user -u vaultwarden -u vaultwarden-ts -f
 logs-follow:
     journalctl --user -u vaultwarden -u vaultwarden-ts -f
 
-# Pull latest images
+# podman auto-update
 update:
     podman auto-update
