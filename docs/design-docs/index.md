@@ -16,11 +16,3 @@
 |---|---|---|
 | [adr/](adr/README.md) | verified | 2026-04-08 |
 | [patterns/](patterns/) | draft | 2026-04-09 |
-| [../../ARCHITECTURE.md](../../ARCHITECTURE.md) | verified | 2026-04-09 |
-
-## Guides
-
-| Document | Status | Last Verified |
-|---|---|---|
-| [../guides/add-service.md](../guides/add-service.md) | draft | 2026-04-09 |
-| [../guides/deploy-flow.md](../guides/deploy-flow.md) | draft | 2026-04-09 |
