@@ -81,10 +81,10 @@ status:
     @echo ""
     -{{ kopia }} snapshot list --all
 
-# Show logs
+# journalctl --user -u kopia-backup --no-pager -n 50
 logs:
     journalctl --user -u kopia-backup --no-pager -n 50
 
-# Follow logs
+# journalctl --user -u kopia-backup -f
 logs-follow:
     journalctl --user -u kopia-backup -f
