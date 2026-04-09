@@ -71,15 +71,24 @@ just gatus <recipe>           # gatus 操作
 ```
 Justfile                              # ルート: mod でサービスを束ねる
 flake.nix                             # 全サービス共通の devShell
-ARCHITECTURE.md                       # 設計思想・パターンカタログ
+ARCHITECTURE.md                       # 設計思想 + パターン/ガイド目次
 docs/
 ├── cheatsheet.md                     # 運用クイックリファレンス
 ├── knowledge.md                      # 既知の落とし穴
+├── guides/                           # 手順書
+│   ├── add-service.md                # サービス追加チェックリスト
+│   └── deploy-flow.md                # デプロイフロー
 └── design-docs/
     ├── index.md                      # 設計文書カタログ
-    └── adr/
-        ├── README.md                 # ADR ガイド・テンプレート
-        └── {3桁連番}-{slug}.md       # 個別 ADR
+    ├── adr/
+    │   ├── README.md                 # ADR ガイド・テンプレート
+    │   └── {3桁連番}-{slug}.md       # 個別 ADR
+    └── patterns/                     # パターンカタログ
+        ├── tailscale-sidecar.md      # Tailscale Sidecar パターン
+        ├── secret-pipeline.md        # シークレットパイプライン
+        ├── log-strategy.md           # ログ戦略
+        ├── quadlet-conventions.md    # Quadlet 構成規約
+        └── exposure-models.md        # 公開モデル
 services/
 ├── backup-kopia-b2/                  # → README.md 参照
 ├── vaultwarden/                      # → README.md 参照

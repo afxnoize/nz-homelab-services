@@ -46,9 +46,10 @@ adguard-home-querylog (fluent-bit) ──┘→ tail → stdout → journald
 
 ### 1. シークレット作成
 
+`secrets.yaml` は SOPS で暗号化済み。編集する場合:
+
 ```bash
-cp secrets.example.yaml secrets.yaml
-sops --encrypt --in-place secrets.yaml
+sops secrets.yaml
 ```
 
 `ts_authkey` には Tailscale Admin Console で発行した authkey を設定する。
@@ -90,7 +91,6 @@ services/adguard-home/
 ├── Justfile
 ├── AdGuardHome.yaml                      # AdGuard Home 設定（リポジトリ管理）
 ├── secrets.yaml                          # SOPS 暗号化済み（ts_authkey）
-├── secrets.example.yaml
 ├── README.md
 ├── fluent-bit/
 │   ├── fluent-bit.conf                   # fluent-bit 設定（querylog tail → stdout）
