@@ -33,20 +33,20 @@ deploy:
     systemctl --user daemon-reload
     echo "==> Deployed (domain: vaultwarden.${TS_DOMAIN})"
 
-# systemctl --user start vaultwarden
+# Start ts sidecar then app
 [group('lifecycle')]
 start:
-    systemctl --user start vaultwarden
+    systemctl --user start vaultwarden-ts vaultwarden
 
-# systemctl --user stop vaultwarden
+# Stop app then ts sidecar (reverse order)
 [group('lifecycle')]
 stop:
-    systemctl --user stop vaultwarden
+    systemctl --user stop vaultwarden vaultwarden-ts
 
-# systemctl --user restart vaultwarden
+# Restart app and ts sidecar
 [group('lifecycle')]
 restart:
-    systemctl --user restart vaultwarden
+    systemctl --user restart vaultwarden-ts vaultwarden
 
 ####################
 # Observe
