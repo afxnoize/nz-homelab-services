@@ -4,6 +4,7 @@ LogDriver=journald
 Volume=adguard-home-ts-state.volume:/var/lib/tailscale
 Environment=TS_AUTHKEY={{ .Env.ts_authkey }}
 Environment=TS_HOSTNAME=adguard-home
+Environment=TS_STATE_DIR=/var/lib/tailscale
 Environment=TS_SERVE_CONFIG=/config/serve.json
 Environment=TS_USERSPACE=true
 Environment=TS_EXTRA_ARGS=--accept-dns=false

@@ -53,7 +53,7 @@
 ### K-004: Tailscale authkey の有効期限
 
 - **Trigger**: コンテナを破棄・再作成するとき（volume 削除後の再デプロイ等）
-- **Problem**: Tailscale authkey には有効期限がある。volume に保存された状態（`/var/lib/tailscale`）があれば期限切れでも動き続けるが、volume を削除すると再認証が必要になる。期限切れの authkey でコンテナを起動すると、Tailscale がネットワークに参加できず無言で失敗することがある。
+- **Problem**: Tailscale authkey には有効期限がある。state が永続化されていれば（K-011 参照）期限切れでも動き続けるが、state を失うと再認証が必要になる。期限切れの authkey でコンテナを起動すると、Tailscale がネットワークに参加できず無言で失敗することがある。
 - **Solution**: volume を削除する前に新しい authkey を発行して `secrets.yaml` を更新する。`just <service> logs` で Tailscale のログを確認し、認証エラーがないか確認する。
 - **Confidence**: high
 
@@ -117,3 +117,14 @@
 - **Solution**: `Log_Level warn` のまま運用する。error に絞ることも検討したが、query log の異常検知を fluent-bit 側の warn に頼る可能性があるため、情報量を残す判断をした。起動時の一時的な warn は許容する。Log_Level の変更判断は今後の query log 分析結果に基づいて行う。
 - **Confidence**: high
 - **Source**: fluent-bit sidecar 導入時のレビュー + query log 分析（2026-04-09）
+
+### K-011: Tailscale sidecar の state 永続化には `TS_STATE_DIR` が必須
+
+- **Trigger**: tailscale 公式コンテナ（`docker.io/tailscale/tailscale`）を sidecar として使い、state 用 volume を `/var/lib/tailscale` にマウントしているとき
+- **Problem**: `containerboot` は `TS_STATE_DIR` が未設定だと state を `mem:state`（メモリ）に書く。volume をマウントしていても使われず、ログファイル（`tailscaled.log*`）しか残らない。再起動のたびに新しいマシン鍵で登録されるため、旧ノードが tailnet に残っている間は `<hostname>-1`, `-2` と suffix が付く。ホストの再起動や volume の再作成をきっかけに顕在化する。
+- **Solution**: ts コンテナに `Environment=TS_STATE_DIR=/var/lib/tailscale` を明示する。既に suffix 付きで登録されてしまった場合は以下の手順:
+  1. テンプレに `TS_STATE_DIR` を追加して `just <service> deploy`
+  2. Tailscale admin (<https://login.tailscale.com/admin/machines>) で旧 `<hostname>`（offline）と `<hostname>-1`（active）の両方を削除
+  3. `systemctl --user restart <service>-ts` で再認証。state が永続化され、以降は base hostname を保持する
+- **Confidence**: high
+- **Source**: ホスト再起動で adguard-home / vaultwarden が `-1` に化けた事案（2026-04-10）
