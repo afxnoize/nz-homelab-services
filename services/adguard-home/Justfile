@@ -47,20 +47,20 @@ deploy:
     echo "==> Deployed (Web UI: https://adguard-home.${TS_DOMAIN})"
     echo "==> DNS: bind address を 0.0.0.0:53, Web UI を 0.0.0.0:3000 に設定してください"
 
-# systemctl --user start adguard-home adguard-home-querylog
+# Start ts sidecar, app, then querylog sidecar
 [group('lifecycle')]
 start:
-    systemctl --user start adguard-home adguard-home-querylog
+    systemctl --user start adguard-home-ts adguard-home adguard-home-querylog
 
-# systemctl --user stop adguard-home-querylog adguard-home
+# Stop querylog, app, then ts sidecar (reverse order)
 [group('lifecycle')]
 stop:
-    systemctl --user stop adguard-home-querylog adguard-home
+    systemctl --user stop adguard-home-querylog adguard-home adguard-home-ts
 
-# systemctl --user restart adguard-home adguard-home-querylog
+# Restart all related units
 [group('lifecycle')]
 restart:
-    systemctl --user restart adguard-home adguard-home-querylog
+    systemctl --user restart adguard-home-ts adguard-home adguard-home-querylog
 
 ####################
 # Observe
