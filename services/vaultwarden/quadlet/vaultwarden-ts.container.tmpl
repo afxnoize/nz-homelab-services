@@ -4,6 +4,7 @@ LogDriver=journald
 Volume=vaultwarden-ts-state.volume:/var/lib/tailscale
 Environment=TS_AUTHKEY={{ .Env.ts_authkey }}
 Environment=TS_HOSTNAME=vaultwarden
+Environment=TS_STATE_DIR=/var/lib/tailscale
 Environment=TS_SERVE_CONFIG=/config/serve.json
 Environment=TS_USERSPACE=true
 Volume=%h/.config/containers/systemd/vaultwarden-ts-serve.json:/config/serve.json:ro
