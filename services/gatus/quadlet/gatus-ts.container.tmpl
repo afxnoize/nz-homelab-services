@@ -1,0 +1,21 @@
+[Container]
+Image=docker.io/tailscale/tailscale:latest
+LogDriver=journald
+Volume=gatus-ts-state.volume:/var/lib/tailscale
+Environment=TS_AUTHKEY={{ .Env.ts_authkey }}
+Environment=TS_HOSTNAME=gatus
+Environment=TS_STATE_DIR=/var/lib/tailscale
+Environment=TS_SERVE_CONFIG=/config/serve.json
+Environment=TS_USERSPACE=true
+Volume=%h/.config/containers/systemd/gatus-ts-serve.json:/config/serve.json:ro
+HealthCmd=tailscale status --json | grep -q '"Online": true' || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
