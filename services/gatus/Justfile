@@ -21,49 +21,52 @@ deploy:
       exit 1
     fi
     mkdir -p {{ quadlet_dir }}
-    echo "==> Generating config from template"
+    echo "==> Generating config and quadlet files from templates"
     sops exec-env {{ secrets }} ' \
-      gomplate -f config.yaml.tmpl -o {{ quadlet_dir }}/gatus-config.yaml \
+      gomplate -f config.yaml.tmpl                    -o {{ quadlet_dir }}/gatus-config.yaml && \
+      gomplate -f quadlet/gatus-ts.container.tmpl     -o {{ quadlet_dir }}/gatus-ts.container && \
+      gomplate -f quadlet/gatus-ts-serve.json.tmpl    -o {{ quadlet_dir }}/gatus-ts-serve.json \
     '
     echo "==> Copying quadlet files"
     cp quadlet/gatus.container {{ quadlet_dir }}/
     cp quadlet/gatus-data.volume {{ quadlet_dir }}/
+    cp quadlet/gatus-ts-state.volume {{ quadlet_dir }}/
     systemctl --user daemon-reload
-    echo "==> Deployed"
+    echo "==> Deployed (domain: gatus.${TS_DOMAIN})"
 
-# systemctl --user start gatus
+# Start ts sidecar then app
 [group('lifecycle')]
 start:
-    systemctl --user start gatus
+    systemctl --user start gatus-ts gatus
 
-# systemctl --user stop gatus
+# Stop app then ts sidecar (reverse order)
 [group('lifecycle')]
 stop:
-    systemctl --user stop gatus
+    systemctl --user stop gatus gatus-ts
 
-# systemctl --user restart gatus
+# Restart app and ts sidecar
 [group('lifecycle')]
 restart:
-    systemctl --user restart gatus
+    systemctl --user restart gatus-ts gatus
 
 ####################
 # Observe
 ####################
 
-# systemctl --user status gatus --no-pager
+# systemctl --user status gatus gatus-ts --no-pager
 [group('observe')]
 status:
-    -systemctl --user status gatus --no-pager
+    -systemctl --user status gatus gatus-ts --no-pager
 
-# journalctl --user -u gatus --no-pager -n <count>
+# journalctl --user -u gatus -u gatus-ts --no-pager -n <count>
 [group('observe')]
 logs count="50":
-    journalctl --user -u gatus --no-pager -n {{ count }}
+    journalctl --user -u gatus -u gatus-ts --no-pager -n {{ count }}
 
-# journalctl --user -u gatus -f
+# journalctl --user -u gatus -u gatus-ts -f
 [group('observe')]
 logs-follow:
-    journalctl --user -u gatus -f
+    journalctl --user -u gatus -u gatus-ts -f
 
 ####################
 # Maintenance
