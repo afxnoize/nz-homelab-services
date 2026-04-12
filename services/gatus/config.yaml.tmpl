@@ -33,3 +33,21 @@ endpoints:
       - "[CONNECTED] == true"
     alerts:
       - type: telegram
+
+  - name: AdGuard Home
+    group: services
+    url: "https://adguard-home.{{ .Env.TS_DOMAIN }}/login.html"
+    interval: 30s
+    conditions:
+      - "[STATUS] == 200"
+    alerts:
+      - type: telegram
+
+  - name: AdGuard Home (Tailscale)
+    group: infrastructure
+    url: "https://adguard-home.{{ .Env.TS_DOMAIN }}"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+    alerts:
+      - type: telegram
