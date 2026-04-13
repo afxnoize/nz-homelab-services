@@ -76,20 +76,13 @@
   ```
 - **Confidence**: high
 
-### K-007: fluent-bit tail の位置永続化（adguard-home-querylog）
+### K-007: fluent-bit tail の位置永続化（adguard-home-querylog）【対処済み】
 
 - **Trigger**: `adguard-home-querylog` コンテナ（fluent-bit）が再起動されたとき
 - **Problem**: fluent-bit の tail input に `DB` パラメータを設定していないため、読み取り位置が永続化されない。再起動中に書き込まれたクエリログが欠損する。`Read_from_Head true` にすれば再読み込みされるが、journald に重複エントリが入る。
-- **Solution**: state 用の named volume（`adguard-home-querylog-state.volume`）を作成し、`/state` にマウント。fluent-bit.conf に `DB /state/tail-pos.db` を追加する。data volume は `:ro` のため DB を同じボリュームに置けない点に注意。
-  ```ini
-  # adguard-home-querylog.container に追加
-  Volume=adguard-home-querylog-state.volume:/state
-
-  # fluent-bit.conf [INPUT] に追加
-  DB  /state/tail-pos.db
-  ```
+- **Solution**: state 用の named volume（`adguard-home-querylog-state.volume`）を作成し、`/state` にマウント。fluent-bit.conf に `DB /state/tail-pos.db` を追加した。data volume は `:ro` のため DB を同じボリュームに置けない点に注意。併せて `AdGuardHome.yaml` の `querylog.interval` を `720h` → `24h` に短縮（journald 側に記録済みのため長期保持不要）。
 - **Confidence**: high
-- **Source**: fluent-bit sidecar 導入時のレビュー（2026-04-09）
+- **Source**: fluent-bit sidecar 導入時のレビュー（2026-04-09）、対処（2026-04-13）
 
 ### K-008: fluent-bit と AdGuardHome.yaml の querylog パス依存
 
