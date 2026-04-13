@@ -35,6 +35,7 @@ just deploy-all               # 全サービス deploy
 just backup <recipe>          # kopia 操作
 just vaultwarden <recipe>     # vaultwarden 操作
 just gatus <recipe>           # gatus 操作
+just ollama <recipe>          # ollama 操作 (WSL2 マシン向け)
 ```
 
 ## アーキテクチャ
@@ -49,6 +50,7 @@ just gatus <recipe>           # gatus 操作
 - [services/vaultwarden/README.md](services/vaultwarden/README.md) — Vaultwarden + Tailscale Serve
 - [services/gatus/README.md](services/gatus/README.md) — Gatus ヘルスチェック + Telegram 通知
 - [services/adguard-home/README.md](services/adguard-home/README.md) — AdGuard Home DNS + Tailscale Serve
+- [services/ollama/README.md](services/ollama/README.md) — Ollama + Open WebUI + Tailscale Serve (WSL2 / GPU)
 
 ## 技術スタック
 
@@ -59,6 +61,7 @@ just gatus <recipe>           # gatus 操作
 | パスワード管理 | Vaultwarden + Tailscale Serve            |
 | ヘルスチェック | Gatus + Telegram 通知                    |
 | DNS フィルタ   | AdGuard Home + Tailscale Serve           |
+| LLM 推論      | Ollama + Open WebUI + Tailscale Serve (WSL2 / NVIDIA GPU) |
 | シークレット   | SOPS (age 暗号化) → Git 管理            |
 | スケジュール   | systemd user timer (daily)               |
 | コンテナ       | Podman Quadlet (systemd 統合)            |
@@ -93,7 +96,8 @@ services/
 ├── backup-kopia-b2/                  # → README.md 参照
 ├── vaultwarden/                      # → README.md 参照
 ├── gatus/                            # → README.md 参照
-└── adguard-home/                     # → README.md 参照
+├── adguard-home/                     # → README.md 参照
+└── ollama/                           # → README.md 参照 (WSL2 マシン)
 ```
 
 ## 設計判断

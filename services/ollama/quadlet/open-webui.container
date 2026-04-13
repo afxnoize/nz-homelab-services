@@ -1,0 +1,22 @@
+[Unit]
+Requires=ollama.service
+After=ollama.service
+
+[Container]
+Image=ghcr.io/open-webui/open-webui:v0.8.12
+AutoUpdate=registry
+LogDriver=journald
+Volume=open-webui-data.volume:/app/backend/data
+Network=container:systemd-ollama-ts
+Environment=OLLAMA_BASE_URL=http://127.0.0.1:11434
+HealthCmd=curl -sf http://127.0.0.1:8080/health || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

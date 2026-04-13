@@ -1,0 +1,85 @@
+default:
+    @just --list
+
+set dotenv-load := false
+
+secrets := env("OLLAMA_SECRETS", "./secrets.yaml")
+quadlet_dir := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "containers/systemd"
+
+units := "ollama-ts ollama open-webui"
+
+####################
+# Lifecycle
+####################
+
+# Deploy quadlet files and reload systemd
+[group('lifecycle')]
+deploy:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export TS_DOMAIN=$(tailscale status --json | jq -r '.MagicDNSSuffix')
+    if [[ -z "${TS_DOMAIN}" || "${TS_DOMAIN}" == "null" ]]; then
+      echo "ERROR: failed to get Tailscale MagicDNS suffix" >&2
+      exit 1
+    fi
+    mkdir -p {{ quadlet_dir }}
+    echo "==> Generating quadlet files from templates"
+    sops exec-env {{ secrets }} ' \
+      gomplate -f quadlet/ollama-ts.container.tmpl  -o {{ quadlet_dir }}/ollama-ts.container && \
+      gomplate -f quadlet/ollama-ts-serve.json.tmpl -o {{ quadlet_dir }}/ollama-ts-serve.json \
+    '
+    echo "==> Copying quadlet files"
+    cp quadlet/ollama.container {{ quadlet_dir }}/
+    cp quadlet/open-webui.container {{ quadlet_dir }}/
+    cp quadlet/ollama-data.volume {{ quadlet_dir }}/
+    cp quadlet/ollama-ts-state.volume {{ quadlet_dir }}/
+    cp quadlet/open-webui-data.volume {{ quadlet_dir }}/
+    systemctl --user daemon-reload
+    echo "==> Deployed (domain: ollama.${TS_DOMAIN})"
+
+# Start ts sidecar → ollama → open-webui
+[group('lifecycle')]
+start:
+    systemctl --user start {{ units }}
+
+# Stop open-webui → ollama → ts sidecar (reverse order)
+[group('lifecycle')]
+stop:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    for u in $(echo {{ units }} | tr ' ' '\n' | tac); do
+      systemctl --user stop "$u"
+    done
+
+# Restart all units
+[group('lifecycle')]
+restart:
+    systemctl --user restart {{ units }}
+
+####################
+# Observe
+####################
+
+# Show service status
+[group('observe')]
+status:
+    -systemctl --user status {{ units }} --no-pager
+
+# Show recent logs
+[group('observe')]
+logs count="50":
+    journalctl --user -u ollama-ts -u ollama -u open-webui --no-pager -n {{ count }}
+
+# Follow logs
+[group('observe')]
+logs-follow:
+    journalctl --user -u ollama-ts -u ollama -u open-webui -f
+
+####################
+# Maintenance
+####################
+
+# Update container images
+[group('maintenance')]
+update:
+    podman auto-update

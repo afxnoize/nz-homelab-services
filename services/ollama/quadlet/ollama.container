@@ -1,0 +1,22 @@
+[Unit]
+Requires=ollama-ts.service
+After=ollama-ts.service
+
+[Container]
+Image=docker.io/ollama/ollama:latest
+AutoUpdate=registry
+LogDriver=journald
+Volume=ollama-data.volume:/root/.ollama
+Network=container:systemd-ollama-ts
+AddDevice=nvidia.com/gpu=all
+HealthCmd=curl -sf http://127.0.0.1:11434/api/tags || exit 1
+HealthInterval=30s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
