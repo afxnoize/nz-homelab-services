@@ -92,7 +92,7 @@ tls:
 querylog:
   dir_path: /opt/adguardhome/work/data
   ignored: []
-  interval: 720h
+  interval: 24h
   size_memory: 1000
   enabled: true
   ignored_enabled: false

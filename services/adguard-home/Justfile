@@ -28,9 +28,10 @@ deploy:
       gomplate -f quadlet/adguard-home-ts-serve.json.tmpl  -o {{ quadlet_dir }}/adguard-home-ts-serve.json \
     '
     echo "==> Copying quadlet files"
-    cp quadlet/adguard-home-data.volume        {{ quadlet_dir }}/
-    cp quadlet/adguard-home-ts-state.volume    {{ quadlet_dir }}/
-    cp quadlet/adguard-home-querylog.container {{ quadlet_dir }}/
+    cp quadlet/adguard-home-data.volume              {{ quadlet_dir }}/
+    cp quadlet/adguard-home-ts-state.volume          {{ quadlet_dir }}/
+    cp quadlet/adguard-home-querylog.container        {{ quadlet_dir }}/
+    cp quadlet/adguard-home-querylog-state.volume     {{ quadlet_dir }}/
     mkdir -p {{ quadlet_dir }}/adguard-home-conf
     echo "==> Syncing AdGuardHome.yaml (preserving persistent clients)"
     CONF="{{ quadlet_dir }}/adguard-home-conf/AdGuardHome.yaml"
