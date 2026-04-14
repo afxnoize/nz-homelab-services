@@ -33,10 +33,10 @@ deploy:
     cp quadlet/adguard-home-querylog.container        {{ quadlet_dir }}/
     cp quadlet/adguard-home-querylog-state.volume     {{ quadlet_dir }}/
     mkdir -p {{ quadlet_dir }}/adguard-home-conf
-    echo "==> Syncing AdGuardHome.yaml (preserving persistent clients)"
+    echo "==> Syncing AdGuardHome.yaml (preserving users + persistent clients)"
     CONF="{{ quadlet_dir }}/adguard-home-conf/AdGuardHome.yaml"
     if [ -f "$CONF" ]; then
-      yq '.clients.persistent = load("'"$CONF"'").clients.persistent' AdGuardHome.yaml > "$CONF.tmp" && mv "$CONF.tmp" "$CONF"
+      yq '.users = load("'"$CONF"'").users | .clients.persistent = load("'"$CONF"'").clients.persistent' AdGuardHome.yaml > "$CONF.tmp" && mv "$CONF.tmp" "$CONF"
     else
       cp AdGuardHome.yaml "$CONF"
     fi

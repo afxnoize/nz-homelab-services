@@ -121,3 +121,11 @@
   3. `systemctl --user restart <service>-ts` で再認証。state が永続化され、以降は base hostname を保持する
 - **Confidence**: high
 - **Source**: ホスト再起動で adguard-home / vaultwarden が `-1` に化けた事案（2026-04-10）
+
+### K-012: AdGuardHome.yaml に credentials を直書きしない
+
+- **Trigger**: AdGuard Home の管理ユーザーを設定・変更するとき
+- **Problem**: `AdGuardHome.yaml` の `users` にユーザー名と bcrypt ハッシュを書くと git 履歴に残る。bcrypt は salt 付きだがオフライン総当たりの対象になりうる。公開リポジトリでは特に危険。
+- **Solution**: `AdGuardHome.yaml` は `users: []` のまま管理する。deploy 時に `yq` で volume 側の既存 `users` をマージするため、初回デプロイのみ Web UI のセットアップウィザードで admin を作成すればよい。`clients.persistent` も同じ仕組みで volume から引き継がれる。
+- **Confidence**: high
+- **Source**: リポジトリ公開準備時のセキュリティレビュー（2026-04-14）
