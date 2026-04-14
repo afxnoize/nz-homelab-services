@@ -57,7 +57,7 @@ just ollama <recipe>          # ollama 操作 (WSL2 マシン向け)
 | レイヤー       | 技術                                     |
 | -------------- | ---------------------------------------- |
 | バックアップ   | Kopia (S3 互換プロトコルで B2 に接続)    |
-| ストレージ     | Backblaze B2 (`***REDACTED***` bucket)  |
+| ストレージ     | Backblaze B2                             |
 | パスワード管理 | Vaultwarden + Tailscale Serve            |
 | ヘルスチェック | Gatus + Telegram 通知                    |
 | DNS フィルタ   | AdGuard Home + Tailscale Serve           |
