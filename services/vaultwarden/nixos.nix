@@ -14,6 +14,7 @@ in {
   # sops secrets
   sops.secrets."vaultwarden/ts_authkey" = {
     sopsFile = ./secrets.yaml;
+    key = "ts_authkey";
     restartUnits = [ "podman-vaultwarden-ts.service" ];
   };
 

@@ -45,6 +45,7 @@ in {
   # sops secrets
   sops.secrets."adguard-home/ts_authkey" = {
     sopsFile = ./secrets.yaml;
+    key = "ts_authkey";
     restartUnits = [ "podman-adguard-home-ts.service" ];
   };
 

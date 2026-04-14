@@ -52,6 +52,7 @@ in {
   # sops secrets
   sops.secrets."gatus/ts_authkey" = {
     sopsFile = ./secrets.yaml;
+    key = "ts_authkey";
     restartUnits = [ "podman-gatus-ts.service" ];
   };
   sops.secrets."gatus/telegram_bot_token" = {
