@@ -11,14 +11,16 @@ in {
     ../../services/backup-kopia-b2/nixos.nix
   ];
 
-  # Boot (OCI ARM — iSCSI boot volume)
-  boot.initrd.kernelModules = [ "iscsi_tcp" ];
+  # Boot (OCI ARM — UEFI + iSCSI boot volume)
+  boot.initrd.availableKernelModules = [ "xhci_pci" "virtio_pci" "virtio_scsi" "usbhid" "iscsi_tcp" ];
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Networking
   networking.hostName = "oci-nix";
+  networking.useDHCP = true;
   networking.firewall.enable = true;
+  networking.firewall.allowedTCPPorts = [ 22 ];
 
   # Tailscale (host-level)
   services.tailscale.enable = true;
