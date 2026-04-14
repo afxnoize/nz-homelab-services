@@ -1,0 +1,12 @@
+[Unit]
+Description=Restart ollama-ts when unhealthy (sleep/wake recovery)
+After=ollama-ts.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c '\
+  status=$(podman inspect --format="{{.State.Health.Status}}" systemd-ollama-ts 2>/dev/null); \
+  if [ "$status" = "unhealthy" ]; then \
+    echo "ollama-ts is unhealthy, restarting..."; \
+    systemctl --user restart ollama-ts.service; \
+  fi'

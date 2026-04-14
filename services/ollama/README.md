@@ -23,6 +23,8 @@ Ollama (LLM 推論サーバー) + Open WebUI を Podman Quadlet で運用。Tail
 | `quadlet/ollama-data.volume` | モデルデータボリューム |
 | `quadlet/open-webui-data.volume` | Open WebUI データボリューム |
 | `quadlet/ollama-ts-state.volume` | Tailscale state ボリューム |
+| `systemd/ollama-ts-watchdog.service` | Tailscale ヘルスチェック + 自動復旧 |
+| `systemd/ollama-ts-watchdog.timer` | Watchdog 実行タイマー (2分間隔) |
 
 ## セットアップ
 
@@ -58,6 +60,9 @@ just ollama start
 | `just ollama logs` | ログ表示 |
 | `just ollama logs-follow` | ログフォロー |
 | `just ollama update` | コンテナイメージ更新 |
+| `just ollama watchdog-on` | Watchdog タイマー有効化 |
+| `just ollama watchdog-off` | Watchdog タイマー無効化 |
+| `just ollama watchdog-status` | Watchdog 状態確認 |
 
 ## アーキテクチャ
 
@@ -93,3 +98,13 @@ ollama-ts (tailscale sidecar)
 | Ollama API (Aider 等) | `http://ollama.<MagicDNS suffix>:11434` |
 
 > **セキュリティ注意**: Ollama API (`:11434`) は認証なしで Tailnet 全体に公開される。モデルの追加・削除・推論が Tailnet 内の任意のデバイスから可能。必要に応じて Tailscale ACL でアクセスを制限すること。
+
+## Watchdog (スリープ復帰対策)
+
+WSL2 の Windows スリープ復帰後、Tailscale サイドカーが再接続に失敗する問題への対策。2分間隔で `ollama-ts` のヘルスチェックを監視し、unhealthy なら自動で restart する。
+
+```bash
+just ollama watchdog-on    # 有効化（初回のみ）
+just ollama watchdog-off   # 無効化
+just ollama watchdog-status
+```

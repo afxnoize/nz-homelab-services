@@ -5,6 +5,7 @@ set dotenv-load := false
 
 secrets := env("OLLAMA_SECRETS", "./secrets.yaml")
 quadlet_dir := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "containers/systemd"
+unit_dir := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "systemd/user"
 
 units := "ollama-ts ollama open-webui"
 
@@ -83,3 +84,33 @@ logs-follow:
 [group('maintenance')]
 update:
     podman auto-update
+
+####################
+# Watchdog
+####################
+
+# Enable ollama-ts health watchdog timer
+[group('watchdog')]
+watchdog-on:
+    mkdir -p {{ unit_dir }}
+    cp systemd/ollama-ts-watchdog.service {{ unit_dir }}/
+    cp systemd/ollama-ts-watchdog.timer {{ unit_dir }}/
+    systemctl --user daemon-reload
+    systemctl --user enable --now ollama-ts-watchdog.timer
+    @echo "==> Watchdog timer enabled"
+    -systemctl --user status ollama-ts-watchdog.timer --no-pager
+
+# Disable and remove watchdog timer
+[group('watchdog')]
+watchdog-off:
+    -systemctl --user disable --now ollama-ts-watchdog.timer
+    rm -f {{ unit_dir }}/ollama-ts-watchdog.service {{ unit_dir }}/ollama-ts-watchdog.timer
+    systemctl --user daemon-reload
+    @echo "==> Watchdog timer removed"
+
+# Show watchdog status
+[group('watchdog')]
+watchdog-status:
+    -systemctl --user status ollama-ts-watchdog.timer --no-pager
+    @echo "---"
+    -systemctl --user list-timers ollama-ts-watchdog.timer --no-pager
