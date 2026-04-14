@@ -3,7 +3,7 @@ let
   serveJson = pkgs.writeText "gatus-ts-serve.json" (builtins.toJSON {
     TCP = { "443" = { HTTPS = true; }; };
     Web = {
-      ":443" = {
+      "\${TS_CERT_DOMAIN}:443" = {
         Handlers = {
           "/" = { Proxy = "http://127.0.0.1:8080"; };
         };
@@ -32,7 +32,7 @@ let
     endpoints:
       - name: Vaultwarden
         group: services
-        url: "https://vaultwarden:443/alive"
+        url: "https://vaultwarden.''${TS_DOMAIN}/alive"
         interval: 30s
         conditions:
           - "[STATUS] == 200"
@@ -41,7 +41,7 @@ let
 
       - name: AdGuard Home
         group: services
-        url: "https://adguard-home:443/login.html"
+        url: "https://adguard-home.''${TS_DOMAIN}/login.html"
         interval: 30s
         conditions:
           - "[STATUS] == 200"
@@ -65,6 +65,11 @@ in {
     key = "TELEGRAM_CHAT_ID";
     restartUnits = [ "podman-gatus.service" ];
   };
+  sops.secrets."gatus/ts_domain" = {
+    sopsFile = ./secrets.yaml;
+    key = "ts_domain";
+    restartUnits = [ "podman-gatus.service" ];
+  };
 
   # sops templates: generate KEY=VALUE env files for Podman --env-file
   sops.templates."gatus-ts.env".content = ''
@@ -73,6 +78,7 @@ in {
   sops.templates."gatus.env".content = ''
     TELEGRAM_BOT_TOKEN=${config.sops.placeholder."gatus/telegram_bot_token"}
     TELEGRAM_CHAT_ID=${config.sops.placeholder."gatus/telegram_chat_id"}
+    TS_DOMAIN=${config.sops.placeholder."gatus/ts_domain"}
   '';
 
   virtualisation.oci-containers.containers = {

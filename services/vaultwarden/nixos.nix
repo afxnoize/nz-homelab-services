@@ -3,7 +3,7 @@ let
   serveJson = pkgs.writeText "vaultwarden-ts-serve.json" (builtins.toJSON {
     TCP = { "443" = { HTTPS = true; }; };
     Web = {
-      ":443" = {
+      "\${TS_CERT_DOMAIN}:443" = {
         Handlers = {
           "/" = { Proxy = "http://127.0.0.1:80"; };
         };

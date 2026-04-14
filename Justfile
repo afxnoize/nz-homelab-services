@@ -36,17 +36,17 @@ oci_host := `sops -d --extract '["oci_host"]' hosts/oci/secrets.yaml`
 # Deploy NixOS configuration to OCI host
 [group('oci')]
 oci-deploy:
-    nixos-rebuild switch --flake .#oci --target-host root@{{oci_host}}
+    nix run nixpkgs#nixos-rebuild -- switch --flake .#oci --target-host root@{{oci_host}} --build-host root@{{oci_host}}
 
 # Build NixOS configuration without deploying
 [group('oci')]
 oci-build:
-    nixos-rebuild build --flake .#oci --target-host root@{{oci_host}}
+    nix run nixpkgs#nixos-rebuild -- build --flake .#oci --target-host root@{{oci_host}} --build-host root@{{oci_host}}
 
 # Rollback to previous NixOS generation
 [group('oci')]
 oci-rollback:
-    nixos-rebuild switch --flake .#oci --target-host root@{{oci_host}} --rollback
+    nix run nixpkgs#nixos-rebuild -- switch --flake .#oci --target-host root@{{oci_host}} --rollback --build-host root@{{oci_host}}
 
 # Show status of OCI services
 [group('oci')]

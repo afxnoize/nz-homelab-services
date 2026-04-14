@@ -3,7 +3,7 @@ let
   serveJson = pkgs.writeText "adguard-home-ts-serve.json" (builtins.toJSON {
     TCP = { "443" = { HTTPS = true; }; };
     Web = {
-      ":443" = {
+      "\${TS_CERT_DOMAIN}:443" = {
         Handlers = {
           "/" = { Proxy = "http://127.0.0.1:3000"; };
         };
@@ -41,6 +41,7 @@ let
         Time_Format  %Y-%m-%dT%H:%M:%S.%L%z
         Time_Keep    On
   '';
+  adguardConfig = ./AdGuardHome.yaml;
 in {
   # sops secrets
   sops.secrets."adguard-home/ts_authkey" = {
@@ -53,6 +54,13 @@ in {
   sops.templates."adguard-home-ts.env".content = ''
     TS_AUTHKEY=${config.sops.placeholder."adguard-home/ts_authkey"}
   '';
+
+  # Seed AdGuardHome.yaml into the conf volume before container starts
+  # (file bind mount causes "device or resource busy" on atomic rename)
+  systemd.services.podman-adguard-home.serviceConfig.ExecStartPre = lib.mkAfter [
+    "-${pkgs.podman}/bin/podman volume create adguard-home-conf"
+    "${pkgs.coreutils}/bin/install -m 644 ${adguardConfig} /var/lib/containers/storage/volumes/adguard-home-conf/_data/AdGuardHome.yaml"
+  ];
 
   virtualisation.oci-containers.containers = {
     # Tailscale sidecar
@@ -87,7 +95,7 @@ in {
       dependsOn = [ "adguard-home-ts" ];
       volumes = [
         "adguard-home-data:/opt/adguardhome/work/data"
-        "${./AdGuardHome.yaml}:/opt/adguardhome/conf/AdGuardHome.yaml:ro"
+        "adguard-home-conf:/opt/adguardhome/conf"
       ];
       extraOptions = [
         "--network=container:adguard-home-ts"
