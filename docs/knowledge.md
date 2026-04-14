@@ -129,3 +129,11 @@
 - **Solution**: `AdGuardHome.yaml` は `users: []` のまま管理する。deploy 時に `yq` で volume 側の既存 `users` をマージするため、初回デプロイのみ Web UI のセットアップウィザードで admin を作成すればよい。`clients.persistent` も同じ仕組みで volume から引き継がれる。
 - **Confidence**: high
 - **Source**: リポジトリ公開準備時のセキュリティレビュー（2026-04-14）
+
+### K-013: WSL2 スリープ復帰で Tailscale sidecar が再接続に失敗する
+
+- **Trigger**: WSL2 上で動作するサービスの Tailscale sidecar が、Windows スリープ復帰後にアクセス不能になるとき
+- **Problem**: Windows スリープで WSL2 のネットワークスタックが一時的に壊れ、Tailscale コンテナが control plane への再接続に失敗する。`PollNetMap: initial fetch failed 404: node not found` がループし、Tailscale Serve 経由のアクセスが全断する。コンテナ自体は active (running) のままなので systemd の `Restart=always` では検知できない。
+- **Solution**: systemd timer + oneshot service で定期的にコンテナのヘルスチェックを監視し、unhealthy 検知時に自動 restart する。ollama サービスでは `ollama-ts-watchdog.timer`（2分間隔）として実装済み。`just ollama watchdog-on` で有効化。他の WSL2 サービスにも同じパターンを適用可能。
+- **Confidence**: high
+- **Source**: ollama Tailscale sidecar のスリープ復帰障害（2026-04-14）
