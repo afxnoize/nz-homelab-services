@@ -17,6 +17,11 @@ in {
     restartUnits = [ "podman-vaultwarden-ts.service" ];
   };
 
+  # sops template: generate KEY=VALUE env file for Podman --env-file
+  sops.templates."vaultwarden-ts.env".content = ''
+    TS_AUTHKEY=${config.sops.placeholder."vaultwarden/ts_authkey"}
+  '';
+
   virtualisation.oci-containers.containers = {
     # Tailscale sidecar
     vaultwarden-ts = {
@@ -29,7 +34,7 @@ in {
         TS_USERSPACE    = "true";
       };
       environmentFiles = [
-        config.sops.secrets."vaultwarden/ts_authkey".path
+        config.sops.templates."vaultwarden-ts.env".path
       ];
       volumes = [
         "vaultwarden-ts-state:/var/lib/tailscale"

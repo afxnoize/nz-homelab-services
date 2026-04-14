@@ -48,6 +48,11 @@ in {
     restartUnits = [ "podman-adguard-home-ts.service" ];
   };
 
+  # sops template: generate KEY=VALUE env file for Podman --env-file
+  sops.templates."adguard-home-ts.env".content = ''
+    TS_AUTHKEY=${config.sops.placeholder."adguard-home/ts_authkey"}
+  '';
+
   virtualisation.oci-containers.containers = {
     # Tailscale sidecar
     adguard-home-ts = {
@@ -60,7 +65,7 @@ in {
         TS_EXTRA_ARGS  = "--accept-dns=false";
       };
       environmentFiles = [
-        config.sops.secrets."adguard-home/ts_authkey".path
+        config.sops.templates."adguard-home-ts.env".path
       ];
       volumes = [
         "adguard-home-ts-state:/var/lib/tailscale"
