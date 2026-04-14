@@ -26,6 +26,9 @@
 | シークレット暗号化 | SOPS + age     | `sops --encrypt / --decrypt` |
 | テンプレート展開   | gomplate       | `gomplate -f in.tmpl -o out` |
 | YAML/JSON 操作     | yq             | `yq`                     |
+| NixOS デプロイ     | nixos-rebuild  | `just oci-deploy`        |
+| ディスク管理       | disko          | (nixos-anywhere 経由)    |
+| NixOS シークレット | sops-nix       | (nixos-rebuild 時に自動) |
 
 ### 操作
 
@@ -36,6 +39,12 @@ just backup <recipe>          # kopia 操作
 just vaultwarden <recipe>     # vaultwarden 操作
 just gatus <recipe>           # gatus 操作
 just ollama <recipe>          # ollama 操作 (WSL2 マシン向け)
+just oci-deploy               # OCI NixOS デプロイ
+just oci-build                # OCI NixOS ビルド確認
+just oci-rollback             # OCI NixOS ロールバック
+just oci-status               # OCI サービス状態確認
+just oci-logs <service>       # OCI サービスログ
+just oci-ssh                  # OCI SSH 接続
 ```
 
 ## アーキテクチャ
@@ -66,6 +75,7 @@ just ollama <recipe>          # ollama 操作 (WSL2 マシン向け)
 | スケジュール   | systemd user timer (daily)               |
 | コンテナ       | Podman Quadlet (systemd 統合)            |
 | 環境管理       | Nix Flakes (`flake.nix` + `flake.lock`) |
+| ホスト管理     | NixOS (OCI Ampere A1 aarch64)           |
 
 ---
 
@@ -92,6 +102,12 @@ docs/
         ├── log-strategy.md           # ログ戦略
         ├── quadlet-conventions.md    # Quadlet 構成規約
         └── exposure-models.md        # 公開モデル
+hosts/
+└── oci/                              # OCI NixOS ホスト設定
+    ├── configuration.nix             # ホスト設定
+    ├── disko.nix                     # ディスクレイアウト
+    ├── vars.nix                      # ホスト変数
+    └── secrets.yaml                  # ホスト secrets (sops)
 services/
 ├── backup-kopia-b2/                  # → README.md 参照
 ├── vaultwarden/                      # → README.md 参照

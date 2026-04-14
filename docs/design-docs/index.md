@@ -16,3 +16,7 @@
 |---|---|---|
 | [adr/](adr/README.md) | verified | 2026-04-08 |
 | [patterns/](patterns/) | draft | 2026-04-09 |
+
+## Design Documents
+
+- [OCI NixOS マイグレーション設計](../../docs/superpowers/specs/2026-04-14-oci-nixos-migration-design.md) — OCI Always Free への NixOS 移行設計
