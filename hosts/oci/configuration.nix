@@ -32,6 +32,8 @@ in {
   virtualisation.oci-containers.backend = "podman";
 
   # User
+  users.users.root.openssh.authorizedKeys.keys = vars.sshKeys;
+
   users.users.${vars.adminUser} = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
