@@ -145,3 +145,15 @@
 - **Solution**: `services.tailscale.authKeyFile` に sops 管理の authkey を指定する。再起動時に自動で tailnet に参加し、Tailscale SSH が即座に使えるようになる。詳細は [#4](https://github.com/afxnoize/nz-homelab-services/issues/4) を参照。
 - **Confidence**: medium（未実施。現状は browser 認証で運用中）
 - **Source**: OCI NixOS マイグレーション（2026-04-15）
+
+### K-015: quadlet-nix 移行で systemd unit 名から `podman-` プレフィックスが消える
+
+- **Trigger**: NixOS ホスト上のコンテナサービスを `virtualisation.oci-containers` から `virtualisation.quadlet`（quadlet-nix）に移行したとき
+- **Problem**: `virtualisation.oci-containers.containers.<name>` は systemd unit を `podman-<name>.service` として生成するが、Quadlet は `.container` ファイル名から `<name>.service` を生成する（プレフィックスなし）。移行直後は新旧どちらの unit 名も参照できる状態にならず、旧名を前提にした journalctl / systemctl コマンドやラベル定義が無言で空の結果を返す。deploy 直後に「ログが止まった」「監視が外れた」ように見えるが、実体は新 unit が走っているだけ。
+- **Solution**:
+  - Justfile の `oci-logs` / `oci-status` など、unit 名に `podman-` プレフィックスを決め打ちしている箇所を `<name>.service` に書き換える
+  - sops-nix の `restartUnits = [ "podman-<name>.service" ]` を `[ "<name>.service" ]` に更新する（ADR-009 移行時にサービスごとに行う）
+  - ログ・監視系の運用ツール（Alloy の `loki.source.journal` relabel など）も同タイミングで調整する
+  - 混在期間中は `journalctl -u <name>.service -u podman-<name>.service ...` の両方指定で凌ぐこともできるが、順次移行していく前提ならシンプルに新名へ一括更新する方が保守しやすい
+- **Confidence**: high
+- **Source**: ADR-009 Phase 1（gatus パイロット移行、2026-04-15）

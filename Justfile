@@ -53,10 +53,10 @@ oci-rollback:
 oci-status:
     ssh root@{{oci_host}} 'quadlet_units=$(find /etc/containers/systemd -maxdepth 1 -name "*.container" -exec basename -s .container {} \; 2>/dev/null | sed "s/\$/.service/" | tr "\n" " "); systemctl list-units --no-pager "podman-*" $quadlet_units'
 
-# Show logs for an OCI service (covers both oci-containers "podman-<name>.service" and Quadlet "<name>.service")
+# Show logs for an OCI service (Quadlet unit "<name>.service")
 [group('oci')]
 oci-logs service:
-    ssh root@{{oci_host}} 'journalctl -u {{service}}.service -u podman-{{service}}.service -n 50 --no-pager'
+    ssh root@{{oci_host}} 'journalctl -u {{service}}.service -n 50 --no-pager'
 
 # SSH into OCI host
 [group('oci')]
