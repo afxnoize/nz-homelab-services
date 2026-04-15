@@ -65,19 +65,21 @@ just oci-ssh                  # OCI SSH 接続
 
 ## 技術スタック
 
-| レイヤー       | 技術                                                      |
-| -------------- | --------------------------------------------------------- |
-| バックアップ   | Kopia (S3 互換プロトコルで B2 に接続)                     |
-| ストレージ     | Backblaze B2                                              |
-| パスワード管理 | Vaultwarden + Tailscale Serve                             |
-| ヘルスチェック | Gatus + Telegram 通知                                     |
-| DNS フィルタ   | AdGuard Home + Tailscale Serve                            |
-| LLM 推論       | Ollama + Open WebUI + Tailscale Serve (WSL2 / NVIDIA GPU) |
-| シークレット   | SOPS (age 暗号化) → Git 管理                              |
-| スケジュール   | systemd user timer (daily)                                |
-| コンテナ       | Podman Quadlet (systemd 統合)                             |
-| 環境管理       | Nix Flakes (`flake.nix` + `flake.lock`)                   |
-| ホスト管理     | NixOS (OCI Ampere A1 aarch64)                             |
+| レイヤー       | 技術                                                                |
+| -------------- | ------------------------------------------------------------------- |
+| バックアップ   | Kopia (S3 互換プロトコルで B2 に接続)                               |
+| ストレージ     | Backblaze B2                                                        |
+| パスワード管理 | Vaultwarden + Tailscale Serve                                       |
+| ヘルスチェック | Gatus + Telegram 通知                                               |
+| 観測スタック   | Alloy + VictoriaLogs + VictoriaMetrics + Grafana (Phase 2 / 計画中) |
+| アラート       | Gatus (外形) + vmalert (メトリクス) → Telegram (Phase 2)            |
+| DNS フィルタ   | AdGuard Home + Tailscale Serve                                      |
+| LLM 推論       | Ollama + Open WebUI + Tailscale Serve (WSL2 / NVIDIA GPU)           |
+| シークレット   | SOPS (age 暗号化) → Git 管理                                        |
+| スケジュール   | systemd user timer (daily)                                          |
+| コンテナ       | Podman Quadlet (systemd 統合)                                       |
+| 環境管理       | Nix Flakes (`flake.nix` + `flake.lock`)                             |
+| ホスト管理     | NixOS (OCI Ampere A1 aarch64)                                       |
 
 ---
 
