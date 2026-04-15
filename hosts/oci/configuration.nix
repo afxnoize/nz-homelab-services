@@ -8,7 +8,6 @@ in {
     ../../services/adguard-home/nixos.nix
     ../../services/vaultwarden/nixos.nix
     ../../services/gatus/nixos.nix
-    ../../services/backup-kopia-b2/nixos.nix
   ];
 
   # Boot (OCI ARM — UEFI + iSCSI boot volume)
