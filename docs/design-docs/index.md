@@ -14,8 +14,8 @@
 
 | Document               | Status   | Last Verified |
 | ---------------------- | -------- | ------------- |
-| [adr/](adr/README.md)  | verified | 2026-04-08    |
-| [patterns/](patterns/) | draft    | 2026-04-09    |
+| [adr/](adr/README.md)  | verified | 2026-04-15    |
+| [patterns/](patterns/) | draft    | 2026-04-15    |
 
 ## Design Documents
 

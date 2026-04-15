@@ -14,14 +14,29 @@
 - 標準: `LogDriver=journald` を全コンテナに設定（[Quadlet 構成規約](quadlet-conventions.md)を参照）
 - 例外: アプリがファイルにしかログを書かない場合（AdGuard Home の querylog 等）は fluent-bit サイドカーで tail → stdout → journald に転送する（[ADR-006](../adr/006-adguard-querylog-fluent-bit-sidecar.md)）
 
-## 将来（Phase 2 — Grafana + Loki）
+## 将来（Phase 2 — Grafana + Alloy + VictoriaLogs / VictoriaMetrics）
 
-OCI 移行を想定し、journald 依存から Grafana + Loki スタックへの移行を検討中。
+journald 依存から、ホストエージェント型の Alloy + VictoriaLogs / VictoriaMetrics スタックへ移行する。バックエンド選定は [ADR-007](../adr/007-log-backend-victorialogs.md)、コレクタ構成は [ADR-008](../adr/008-alloy-unified-collector.md) を参照。
 
+```mermaid
+flowchart LR
+    subgraph Host[OCI / WSL2 ホスト]
+        subgraph Pod[サービス Pod]
+            APP[App container<br/>stdout/stderr]
+            FILE[(アプリ固有ファイル<br/>shared volume)]
+            APP -.writes.-> FILE
+        end
+        APP -- LogDriver=journald --> JD[(journald)]
+        JD -- loki.source.journal --> AL[Alloy<br/>host agent]
+        FILE -- ro mount<br/>loki.source.file --> AL
+        EXP[Prometheus<br/>exporters] -- scrape --> AL
+    end
+    AL -- loki push --> VL[(VictoriaLogs)]
+    AL -- remote_write --> VM[(VictoriaMetrics)]
 ```
-コンテナ ──► Alloy (or fluent-bit) ──► Loki ──► Grafana
-```
 
-- ログ収集: Alloy または fluent-bit。メトリクスも取りたければ Alloy を採用するか、fluent-bit と併用する
-- Phase 1 の fluent-bit サイドカーは Phase 2 でも転用可能（出力先を stdout から Loki に切り替えるだけ）
-- 移行判断は OCI 環境が確定した時点で ADR として記録する
+- コレクタ: **Alloy** をホストに 1 プロセス配置（Quadlet / systemd ユニット）
+- container stdout: `LogDriver=journald` は維持、Alloy の `loki.source.journal` で拾う
+- アプリ固有ファイルログ: shared volume を Alloy にも `ro` でマウントし、`loki.source.file` で直接 tail（fluent-bit サイドカーは廃止）
+- metrics: Alloy の `prometheus.scrape` → `prometheus.remote_write` で VictoriaMetrics に push
+- マルチホスト: WSL2 ホストの Alloy は Tailnet 越しに OCI 側 VL/VM へ push
