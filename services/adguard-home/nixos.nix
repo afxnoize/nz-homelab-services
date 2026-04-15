@@ -61,7 +61,7 @@ in
   sops.secrets."adguard-home/ts_authkey" = {
     sopsFile = ./secrets.yaml;
     key = "ts_authkey";
-    restartUnits = [ "podman-adguard-home-ts.service" ];
+    restartUnits = [ "adguard-home-ts.service" ];
   };
 
   # sops template: generate KEY=VALUE env file for Podman --env-file
@@ -69,73 +69,91 @@ in
     TS_AUTHKEY=${config.sops.placeholder."adguard-home/ts_authkey"}
   '';
 
-  # Seed AdGuardHome.yaml into the conf volume before container starts
-  # (file bind mount causes "device or resource busy" on atomic rename)
-  systemd.services.podman-adguard-home.serviceConfig.ExecStartPre = lib.mkAfter [
-    "-${pkgs.podman}/bin/podman volume create adguard-home-conf"
-    "${pkgs.coreutils}/bin/install -m 644 ${adguardConfig} /var/lib/containers/storage/volumes/adguard-home-conf/_data/AdGuardHome.yaml"
-  ];
-
-  virtualisation.oci-containers.containers = {
+  virtualisation.quadlet.containers = {
     # Tailscale sidecar
     adguard-home-ts = {
-      image = "docker.io/tailscale/tailscale:latest";
-      environment = {
-        TS_HOSTNAME = "adguard-home";
-        TS_STATE_DIR = "/var/lib/tailscale";
-        TS_SERVE_CONFIG = "/config/serve.json";
-        TS_USERSPACE = "true";
-        TS_EXTRA_ARGS = "--accept-dns=false";
+      autoStart = true;
+      containerConfig = {
+        image = "docker.io/tailscale/tailscale:latest";
+        environments = {
+          TS_HOSTNAME = "adguard-home";
+          TS_STATE_DIR = "/var/lib/tailscale";
+          TS_SERVE_CONFIG = "/config/serve.json";
+          TS_USERSPACE = "true";
+          TS_EXTRA_ARGS = "--accept-dns=false";
+        };
+        environmentFiles = [
+          config.sops.templates."adguard-home-ts.env".path
+        ];
+        volumes = [
+          "adguard-home-ts-state:/var/lib/tailscale"
+          "${serveJson}:/config/serve.json:ro"
+        ];
+        healthCmd = "tailscale status --json | grep -q '\"Online\": true' || exit 1";
+        healthInterval = "30s";
+        healthTimeout = "10s";
+        healthRetries = 3;
+        healthStartPeriod = "60s";
+        logDriver = "journald";
       };
-      environmentFiles = [
-        config.sops.templates."adguard-home-ts.env".path
-      ];
-      volumes = [
-        "adguard-home-ts-state:/var/lib/tailscale"
-        "${serveJson}:/config/serve.json:ro"
-      ];
-      extraOptions = [
-        "--health-cmd=tailscale status --json | grep -q '\"Online\": true' || exit 1"
-        "--health-interval=30s"
-        "--health-timeout=10s"
-        "--health-retries=3"
-        "--health-start-period=60s"
-      ];
+      serviceConfig.Restart = "always";
     };
 
     # AdGuard Home
     adguard-home = {
-      image = "docker.io/adguard/adguardhome:latest";
-      dependsOn = [ "adguard-home-ts" ];
-      volumes = [
-        "adguard-home-data:/opt/adguardhome/work/data"
-        "adguard-home-conf:/opt/adguardhome/conf"
-      ];
-      extraOptions = [
-        "--network=container:adguard-home-ts"
-        "--health-cmd=wget --quiet --tries=1 --spider http://127.0.0.1:3000 || exit 1"
-        "--health-interval=30s"
-        "--health-timeout=10s"
-        "--health-retries=3"
-        "--health-start-period=60s"
-      ];
+      autoStart = true;
+      containerConfig = {
+        image = "docker.io/adguard/adguardhome:latest";
+        networks = [ "container:adguard-home-ts" ];
+        volumes = [
+          "adguard-home-data:/opt/adguardhome/work/data"
+          "adguard-home-conf:/opt/adguardhome/conf"
+        ];
+        healthCmd = "wget --quiet --tries=1 --spider http://127.0.0.1:3000 || exit 1";
+        healthInterval = "30s";
+        healthTimeout = "10s";
+        healthRetries = 3;
+        healthStartPeriod = "60s";
+        logDriver = "journald";
+      };
+      unitConfig = {
+        Requires = [ "adguard-home-ts.service" ];
+        After = [ "adguard-home-ts.service" ];
+      };
+      serviceConfig = {
+        Restart = "always";
+        # Seed AdGuardHome.yaml into the conf volume before container starts
+        # (file bind mount causes "device or resource busy" on atomic rename)
+        ExecStartPre = lib.mkAfter [
+          "-${pkgs.podman}/bin/podman volume create adguard-home-conf"
+          "${pkgs.coreutils}/bin/install -m 644 ${adguardConfig} /var/lib/containers/storage/volumes/adguard-home-conf/_data/AdGuardHome.yaml"
+        ];
+      };
     };
 
     # Fluent-bit querylog sidecar
     adguard-home-querylog = {
-      image = "ghcr.io/fluent/fluent-bit:latest";
-      dependsOn = [ "adguard-home" ];
-      volumes = [
-        "adguard-home-data:/data:ro"
-        "adguard-home-querylog-state:/state"
-        "${fluentBitConf}:/fluent-bit/etc/fluent-bit.conf:ro"
-        "${parsersConf}:/fluent-bit/etc/parsers.conf:ro"
-      ];
-      cmd = [
-        "/fluent-bit/bin/fluent-bit"
-        "-c"
-        "/fluent-bit/etc/fluent-bit.conf"
-      ];
+      autoStart = true;
+      containerConfig = {
+        image = "ghcr.io/fluent/fluent-bit:latest";
+        volumes = [
+          "adguard-home-data:/data:ro"
+          "adguard-home-querylog-state:/state"
+          "${fluentBitConf}:/fluent-bit/etc/fluent-bit.conf:ro"
+          "${parsersConf}:/fluent-bit/etc/parsers.conf:ro"
+        ];
+        exec = [
+          "/fluent-bit/bin/fluent-bit"
+          "-c"
+          "/fluent-bit/etc/fluent-bit.conf"
+        ];
+        logDriver = "journald";
+      };
+      unitConfig = {
+        Requires = [ "adguard-home.service" ];
+        After = [ "adguard-home.service" ];
+      };
+      serviceConfig.Restart = "always";
     };
   };
 }
