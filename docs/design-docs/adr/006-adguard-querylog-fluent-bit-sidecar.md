@@ -1,7 +1,8 @@
 # ADR-006: AdGuard Home クエリログを fluent-bit サイドカーで journald に転送
 
-- **Status**: accepted
+- **Status**: superseded
 - **Date**: 2026-04-09
+- **Superseded by**: ADR-008
 
 ## Context
 
