@@ -126,9 +126,9 @@
 
 - **Trigger**: AdGuard Home の管理ユーザーを設定・変更するとき
 - **Problem**: `AdGuardHome.yaml` の `users` にユーザー名と bcrypt ハッシュを書くと git 履歴に残る。bcrypt は salt 付きだがオフライン総当たりの対象になりうる。公開リポジトリでは特に危険。
-- **Solution**: `AdGuardHome.yaml` は `users: []` のまま管理する。deploy 時に `yq` で volume 側の既存 `users` をマージするため、初回デプロイのみ Web UI のセットアップウィザードで admin を作成すればよい。`clients.persistent` も同じ仕組みで volume から引き継がれる。
+- **Solution**: `AdGuardHome.yaml` は `users: []` のまま管理する。Quadlet 版では deploy 時に `yq` で volume 側の既存 `users` / `clients.persistent` をマージしていたが、NixOS 版では `ExecStartPre` が毎回 `AdGuardHome.yaml` を volume に上書きするため、このマージは行われない。結果として認証なし (`users: []`) で常に動作する。Tailscale Serve の裏にいるため Tailnet 外からはアクセスできず、実害はない。
 - **Confidence**: high
-- **Source**: リポジトリ公開準備時のセキュリティレビュー（2026-04-14）
+- **Source**: リポジトリ公開準備時のセキュリティレビュー（2026-04-14）、NixOS 移行で yq マージ無効化を確認（2026-04-15）
 
 ### K-013: WSL2 スリープ復帰で Tailscale sidecar が再接続に失敗する
 
