@@ -48,15 +48,15 @@ oci-build:
 oci-rollback:
     nix run nixpkgs#nixos-rebuild -- switch --flake .#oci --target-host root@{{oci_host}} --rollback --build-host root@{{oci_host}}
 
-# Show status of OCI services
+# Show status of OCI services (oci-containers: podman-*.service / Quadlet: <name>.service from /etc/containers/systemd/)
 [group('oci')]
 oci-status:
-    ssh root@{{oci_host}} 'systemctl list-units "podman-*" --no-pager'
+    ssh root@{{oci_host}} 'quadlet_units=$(find /etc/containers/systemd -maxdepth 1 -name "*.container" -exec basename -s .container {} \; 2>/dev/null | sed "s/\$/.service/" | tr "\n" " "); systemctl list-units --no-pager "podman-*" $quadlet_units'
 
-# Show logs for an OCI service
+# Show logs for an OCI service (Quadlet unit "<name>.service")
 [group('oci')]
 oci-logs service:
-    ssh root@{{oci_host}} 'journalctl -u podman-{{service}} -n 50 --no-pager'
+    ssh root@{{oci_host}} 'journalctl -u {{service}}.service -n 50 --no-pager'
 
 # SSH into OCI host
 [group('oci')]

@@ -15,6 +15,9 @@
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    quadlet-nix = {
+      url = "github:SEIAROTg/quadlet-nix";
+    };
   };
 
   outputs =
@@ -24,6 +27,7 @@
       disko,
       sops-nix,
       treefmt-nix,
+      quadlet-nix,
     }:
     let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
@@ -46,6 +50,7 @@
         modules = [
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
+          quadlet-nix.nixosModules.quadlet
           ./hosts/oci/configuration.nix
         ];
       };
