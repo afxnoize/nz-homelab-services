@@ -137,3 +137,11 @@
 - **Solution**: systemd timer + oneshot service で定期的にコンテナのヘルスチェックを監視し、unhealthy 検知時に自動 restart する。ollama サービスでは `ollama-ts-watchdog.timer`（2分間隔）として実装済み。`just ollama watchdog-on` で有効化。他の WSL2 サービスにも同じパターンを適用可能。
 - **Confidence**: high
 - **Source**: ollama Tailscale sidecar のスリープ復帰障害（2026-04-14）
+
+### K-014: OCI 再作成時に Tailscale が自動参加しない
+
+- **Trigger**: nixos-anywhere で OCI インスタンスを再作成したとき
+- **Problem**: `services.tailscale.enable = true` だけでは初回起動時に tailnet に自動参加しない。手動で `tailscale up` または browser 認証が必要になる。OCI インスタンスはシリアルコンソール経由でしかアクセスできない場合があり、browser 認証が困難なケースがある。
+- **Solution**: `services.tailscale.authKeyFile` に sops 管理の authkey を指定する。再起動時に自動で tailnet に参加し、Tailscale SSH が即座に使えるようになる。詳細は [#4](https://github.com/afxnoize/nz-homelab-services/issues/4) を参照。
+- **Confidence**: medium（未実施。現状は browser 認証で運用中）
+- **Source**: OCI NixOS マイグレーション（2026-04-15）
