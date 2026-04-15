@@ -4,7 +4,7 @@
 
   programs.nixfmt.enable = true;
 
-  programs.prettier = {
+  programs.oxfmt = {
     enable = true;
     includes = [
       "*.md"
@@ -14,14 +14,6 @@
     excludes = [
       "flake.lock"
       "**/secrets.yaml"
-    ];
-  };
-
-  settings.formatter.prettier = {
-    options = [
-      "--no-cache"
-      "--cache-location"
-      "/tmp/.prettier-cache"
     ];
   };
 }
