@@ -30,22 +30,22 @@ in
   sops.secrets."gatus/ts_authkey" = {
     sopsFile = ./secrets.yaml;
     key = "ts_authkey";
-    restartUnits = [ "podman-gatus-ts.service" ];
+    restartUnits = [ "gatus-ts.service" ];
   };
   sops.secrets."gatus/telegram_bot_token" = {
     sopsFile = ./secrets.yaml;
     key = "TELEGRAM_BOT_TOKEN";
-    restartUnits = [ "podman-gatus.service" ];
+    restartUnits = [ "gatus.service" ];
   };
   sops.secrets."gatus/telegram_chat_id" = {
     sopsFile = ./secrets.yaml;
     key = "TELEGRAM_CHAT_ID";
-    restartUnits = [ "podman-gatus.service" ];
+    restartUnits = [ "gatus.service" ];
   };
   sops.secrets."gatus/ts_domain" = {
     sopsFile = ./secrets.yaml;
     key = "ts_domain";
-    restartUnits = [ "podman-gatus.service" ];
+    restartUnits = [ "gatus.service" ];
   };
 
   # sops templates: generate files with secrets embedded at activation time
@@ -92,45 +92,52 @@ in
     ];
   };
 
-  virtualisation.oci-containers.containers = {
+  virtualisation.quadlet.containers = {
     # Tailscale sidecar
     gatus-ts = {
-      image = "docker.io/tailscale/tailscale:latest";
       autoStart = true;
-      environment = {
-        TS_HOSTNAME = "gatus";
-        TS_STATE_DIR = "/var/lib/tailscale";
-        TS_SERVE_CONFIG = "/config/serve.json";
-        TS_USERSPACE = "true";
+      containerConfig = {
+        image = "docker.io/tailscale/tailscale:latest";
+        environments = {
+          TS_HOSTNAME = "gatus";
+          TS_STATE_DIR = "/var/lib/tailscale";
+          TS_SERVE_CONFIG = "/config/serve.json";
+          TS_USERSPACE = "true";
+        };
+        environmentFiles = [
+          config.sops.templates."gatus-ts.env".path
+        ];
+        volumes = [
+          "gatus-ts-state:/var/lib/tailscale"
+          "${serveJson}:/config/serve.json:ro"
+        ];
+        healthCmd = "tailscale status --json | grep -q '\"Online\": true' || exit 1";
+        healthInterval = "30s";
+        healthTimeout = "10s";
+        healthRetries = 3;
+        healthStartPeriod = "60s";
+        logDriver = "journald";
       };
-      environmentFiles = [
-        config.sops.templates."gatus-ts.env".path
-      ];
-      volumes = [
-        "gatus-ts-state:/var/lib/tailscale"
-        "${serveJson}:/config/serve.json:ro"
-      ];
-      extraOptions = [
-        "--health-cmd=tailscale status --json | grep -q '\"Online\": true' || exit 1"
-        "--health-interval=30s"
-        "--health-timeout=10s"
-        "--health-retries=3"
-        "--health-start-period=60s"
-      ];
+      serviceConfig.Restart = "always";
     };
 
     # Gatus
     gatus = {
-      image = "ghcr.io/twin/gatus:stable";
       autoStart = true;
-      dependsOn = [ "gatus-ts" ];
-      volumes = [
-        "gatus-data:/data"
-        "${config.sops.templates."gatus-config.yaml".path}:/config/config.yaml:ro"
-      ];
-      extraOptions = [
-        "--network=container:gatus-ts"
-      ];
+      containerConfig = {
+        image = "ghcr.io/twin/gatus:stable";
+        networks = [ "container:gatus-ts" ];
+        volumes = [
+          "gatus-data:/data"
+          "${config.sops.templates."gatus-config.yaml".path}:/config/config.yaml:ro"
+        ];
+        logDriver = "journald";
+      };
+      unitConfig = {
+        Requires = [ "gatus-ts.service" ];
+        After = [ "gatus-ts.service" ];
+      };
+      serviceConfig.Restart = "always";
     };
   };
 }
