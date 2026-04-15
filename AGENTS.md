@@ -17,18 +17,20 @@
 
 ### ツールチェイン
 
-| 用途               | ツール         | コマンド                 |
-| ------------------ | -------------- | ------------------------ |
-| 環境管理           | Nix Flakes     | `nix develop`            |
-| タスクランナー     | just           | `just <recipe>`          |
-| バックアップ       | Kopia          | `kopia` (via Justfile)   |
-| コンテナ           | Podman Quadlet | `systemctl --user`       |
+| 用途               | ツール         | コマンド                     |
+| ------------------ | -------------- | ---------------------------- |
+| 環境管理           | Nix Flakes     | `nix develop`                |
+| タスクランナー     | just           | `just <recipe>`              |
+| バックアップ       | Kopia          | `kopia` (via Justfile)       |
+| コンテナ           | Podman Quadlet | `systemctl --user`           |
 | シークレット暗号化 | SOPS + age     | `sops --encrypt / --decrypt` |
 | テンプレート展開   | gomplate       | `gomplate -f in.tmpl -o out` |
-| YAML/JSON 操作     | yq             | `yq`                     |
-| NixOS デプロイ     | nixos-rebuild  | `just oci-deploy`        |
-| ディスク管理       | disko          | (nixos-anywhere 経由)    |
-| NixOS シークレット | sops-nix       | (nixos-rebuild 時に自動) |
+| YAML/JSON 操作     | yq             | `yq`                         |
+| NixOS デプロイ     | nixos-rebuild  | `just oci-deploy`            |
+| ディスク管理       | disko          | (nixos-anywhere 経由)        |
+| NixOS シークレット | sops-nix       | (nixos-rebuild 時に自動)     |
+| Git hooks          | lefthook       | `lefthook install`           |
+| コードフォーマット | treefmt-nix    | `nix fmt`                    |
 
 ### 操作
 
@@ -63,19 +65,19 @@ just oci-ssh                  # OCI SSH 接続
 
 ## 技術スタック
 
-| レイヤー       | 技術                                     |
-| -------------- | ---------------------------------------- |
-| バックアップ   | Kopia (S3 互換プロトコルで B2 に接続)    |
-| ストレージ     | Backblaze B2                             |
-| パスワード管理 | Vaultwarden + Tailscale Serve            |
-| ヘルスチェック | Gatus + Telegram 通知                    |
-| DNS フィルタ   | AdGuard Home + Tailscale Serve           |
-| LLM 推論      | Ollama + Open WebUI + Tailscale Serve (WSL2 / NVIDIA GPU) |
-| シークレット   | SOPS (age 暗号化) → Git 管理            |
-| スケジュール   | systemd user timer (daily)               |
-| コンテナ       | Podman Quadlet (systemd 統合)            |
-| 環境管理       | Nix Flakes (`flake.nix` + `flake.lock`) |
-| ホスト管理     | NixOS (OCI Ampere A1 aarch64)           |
+| レイヤー       | 技術                                                      |
+| -------------- | --------------------------------------------------------- |
+| バックアップ   | Kopia (S3 互換プロトコルで B2 に接続)                     |
+| ストレージ     | Backblaze B2                                              |
+| パスワード管理 | Vaultwarden + Tailscale Serve                             |
+| ヘルスチェック | Gatus + Telegram 通知                                     |
+| DNS フィルタ   | AdGuard Home + Tailscale Serve                            |
+| LLM 推論       | Ollama + Open WebUI + Tailscale Serve (WSL2 / NVIDIA GPU) |
+| シークレット   | SOPS (age 暗号化) → Git 管理                              |
+| スケジュール   | systemd user timer (daily)                                |
+| コンテナ       | Podman Quadlet (systemd 統合)                             |
+| 環境管理       | Nix Flakes (`flake.nix` + `flake.lock`)                   |
+| ホスト管理     | NixOS (OCI Ampere A1 aarch64)                             |
 
 ---
 
@@ -130,14 +132,14 @@ services/
 
 コード変更時、対応するドキュメントを同一コミットで更新する。
 
-| Code Change | Update Required |
-|---|---|
-| サービス追加/変更/削除 | AGENTS.md, docs/design-docs/ |
-| 設計判断 | docs/design-docs/adr/ に ADR ファイル追加 |
-| 依存関係の追加/変更 | AGENTS.md (ツールチェイン表) |
-| バグ修正（非自明なもの） | 該当サービスの README.md |
-| 新しいパターンの適用 | ARCHITECTURE.md |
-| 運用上の落とし穴の発見 | docs/knowledge.md |
+| Code Change              | Update Required                           |
+| ------------------------ | ----------------------------------------- |
+| サービス追加/変更/削除   | AGENTS.md, docs/design-docs/              |
+| 設計判断                 | docs/design-docs/adr/ に ADR ファイル追加 |
+| 依存関係の追加/変更      | AGENTS.md (ツールチェイン表)              |
+| バグ修正（非自明なもの） | 該当サービスの README.md                  |
+| 新しいパターンの適用     | ARCHITECTURE.md                           |
+| 運用上の落とし穴の発見   | docs/knowledge.md                         |
 
 ---
 

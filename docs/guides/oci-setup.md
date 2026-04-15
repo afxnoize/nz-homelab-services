@@ -13,12 +13,12 @@ OCI Always Free (Ampere A1 aarch64) に NixOS をインストールし、`just o
 
 OCI Console → Compute → Create Instance:
 
-| 項目 | 値 |
-|---|---|
-| Shape | VM.Standard.A1.Flex (4 OCPU, 24 GB) |
-| Image | Ubuntu 22.04 ARM |
-| Boot volume | 200 GB |
-| SSH key | `hosts/oci/vars.nix` に記載した公開鍵を登録 |
+| 項目        | 値                                          |
+| ----------- | ------------------------------------------- |
+| Shape       | VM.Standard.A1.Flex (4 OCPU, 24 GB)         |
+| Image       | Ubuntu 22.04 ARM                            |
+| Boot volume | 200 GB                                      |
+| SSH key     | `hosts/oci/vars.nix` に記載した公開鍵を登録 |
 
 作成後、パブリック IP をメモしておく。
 
@@ -196,14 +196,14 @@ just oci-logs <service>   # e.g. just oci-logs adguard-home
 
 ## 日常の運用コマンド
 
-| コマンド | 用途 |
-|---|---|
-| `just oci-deploy` | configuration.nix の変更を反映 |
-| `just oci-build` | ビルドのみ (デプロイしない) |
-| `just oci-rollback` | 前世代にロールバック |
-| `just oci-status` | コンテナの状態確認 |
-| `just oci-logs <service>` | サービスログ (直近 50 行) |
-| `just oci-ssh` | SSH 接続 |
+| コマンド                  | 用途                           |
+| ------------------------- | ------------------------------ |
+| `just oci-deploy`         | configuration.nix の変更を反映 |
+| `just oci-build`          | ビルドのみ (デプロイしない)    |
+| `just oci-rollback`       | 前世代にロールバック           |
+| `just oci-status`         | コンテナの状態確認             |
+| `just oci-logs <service>` | サービスログ (直近 50 行)      |
+| `just oci-ssh`            | SSH 接続                       |
 
 ## 既知の注意点
 

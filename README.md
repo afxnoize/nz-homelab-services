@@ -4,13 +4,13 @@
 
 ## サービス
 
-| サービス | 概要 |
-|---------|------|
-| [backup-kopia-b2](services/backup-kopia-b2/) | Kopia + B2 による vault の定期バックアップ |
-| [vaultwarden](services/vaultwarden/) | Vaultwarden + Tailscale Serve |
-| [gatus](services/gatus/) | Gatus ヘルスチェック + Telegram 通知 |
-| [adguard-home](services/adguard-home/) | AdGuard Home DNS + Tailscale Serve |
-| [ollama](services/ollama/) | Ollama + Open WebUI + Tailscale Serve (WSL2 / GPU) * |
+| サービス                                     | 概要                                                  |
+| -------------------------------------------- | ----------------------------------------------------- |
+| [backup-kopia-b2](services/backup-kopia-b2/) | Kopia + B2 による vault の定期バックアップ            |
+| [vaultwarden](services/vaultwarden/)         | Vaultwarden + Tailscale Serve                         |
+| [gatus](services/gatus/)                     | Gatus ヘルスチェック + Telegram 通知                  |
+| [adguard-home](services/adguard-home/)       | AdGuard Home DNS + Tailscale Serve                    |
+| [ollama](services/ollama/)                   | Ollama + Open WebUI + Tailscale Serve (WSL2 / GPU) \* |
 
 > \* ollama は WSL2 マシンで動作するため `deploy-all` / `status-all` の対象外。個別に `just ollama <recipe>` で操作する。
 

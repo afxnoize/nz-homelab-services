@@ -16,30 +16,31 @@
 
 ### 新規作成
 
-| ファイル | 責務 |
-|---|---|
-| `hosts/oci/configuration.nix` | ホストレベル設定 (boot, network, users, podman, tailscale, sops) |
-| `hosts/oci/disko.nix` | ディスクパーティション定義 (ESP + root) |
-| `hosts/oci/vars.nix` | ホスト変数 (adminUser, sshKeys) |
-| `hosts/oci/secrets.yaml` | oci_host (sops 暗号化) |
-| `services/adguard-home/nixos.nix` | AdGuard Home + Tailscale sidecar + fluent-bit sidecar |
-| `services/vaultwarden/nixos.nix` | Vaultwarden + Tailscale sidecar |
-| `services/gatus/nixos.nix` | Gatus + Tailscale sidecar + config 生成 |
-| `services/backup-kopia-b2/nixos.nix` | Kopia systemd timer + B2 接続 |
+| ファイル                             | 責務                                                             |
+| ------------------------------------ | ---------------------------------------------------------------- |
+| `hosts/oci/configuration.nix`        | ホストレベル設定 (boot, network, users, podman, tailscale, sops) |
+| `hosts/oci/disko.nix`                | ディスクパーティション定義 (ESP + root)                          |
+| `hosts/oci/vars.nix`                 | ホスト変数 (adminUser, sshKeys)                                  |
+| `hosts/oci/secrets.yaml`             | oci_host (sops 暗号化)                                           |
+| `services/adguard-home/nixos.nix`    | AdGuard Home + Tailscale sidecar + fluent-bit sidecar            |
+| `services/vaultwarden/nixos.nix`     | Vaultwarden + Tailscale sidecar                                  |
+| `services/gatus/nixos.nix`           | Gatus + Tailscale sidecar + config 生成                          |
+| `services/backup-kopia-b2/nixos.nix` | Kopia systemd timer + B2 接続                                    |
 
 ### 変更
 
-| ファイル | 変更内容 |
-|---|---|
-| `flake.nix` | inputs (disko, sops-nix) 追加、`nixosConfigurations.oci` 追加 |
-| `Justfile` | oci グループのレシピ追加 (oci-deploy, oci-build, oci-rollback, oci-status) |
-| `.sops.yaml` | `hosts/oci/secrets.yaml` のルール追加 |
+| ファイル     | 変更内容                                                                   |
+| ------------ | -------------------------------------------------------------------------- |
+| `flake.nix`  | inputs (disko, sops-nix) 追加、`nixosConfigurations.oci` 追加              |
+| `Justfile`   | oci グループのレシピ追加 (oci-deploy, oci-build, oci-rollback, oci-status) |
+| `.sops.yaml` | `hosts/oci/secrets.yaml` のルール追加                                      |
 
 ---
 
 ## Task 1: flake.nix に NixOS 設定の骨格を追加
 
 **Files:**
+
 - Modify: `flake.nix`
 - Create: `hosts/oci/configuration.nix`
 - Create: `hosts/oci/disko.nix`
@@ -238,12 +239,14 @@ EOF
 ## Task 2: .sops.yaml と hosts/oci/secrets.yaml の設定
 
 **Files:**
+
 - Modify: `.sops.yaml`
 - Create: `hosts/oci/secrets.yaml`
 
 - [x] **Step 1: .sops.yaml にホスト secrets のルールを追加**
 
 現在の `.sops.yaml`:
+
 ```yaml
 creation_rules:
   - path_regex: secrets\.yaml$
@@ -251,6 +254,7 @@ creation_rules:
 ```
 
 追加後:
+
 ```yaml
 creation_rules:
   - path_regex: secrets\.yaml$
@@ -299,6 +303,7 @@ EOF
 ## Task 3: Justfile に OCI レシピを追加
 
 **Files:**
+
 - Modify: `Justfile`
 
 - [x] **Step 1: 現在の Justfile を確認**
@@ -306,6 +311,7 @@ EOF
 Read: `Justfile`
 
 現在の内容:
+
 ```just
 mod backup 'services/backup-kopia-b2'
 mod vaultwarden 'services/vaultwarden'
@@ -391,12 +397,14 @@ EOF
 ## Task 4: services/adguard-home/nixos.nix を作成
 
 **Files:**
+
 - Create: `services/adguard-home/nixos.nix`
 - Modify: `hosts/oci/configuration.nix` (import 追加)
 
 - [x] **Step 1: 既存の Quadlet 設定を確認**
 
 Read these files to verify configuration values:
+
 - `services/adguard-home/quadlet/adguard-home.container.tmpl`
 - `services/adguard-home/quadlet/adguard-home-ts.container.tmpl`
 - `services/adguard-home/quadlet/adguard-home-querylog.container`
@@ -558,12 +566,14 @@ EOF
 ## Task 5: services/vaultwarden/nixos.nix を作成
 
 **Files:**
+
 - Create: `services/vaultwarden/nixos.nix`
 - Modify: `hosts/oci/configuration.nix` (import 追加)
 
 - [x] **Step 1: 既存の Quadlet 設定を確認**
 
 Read:
+
 - `services/vaultwarden/quadlet/vaultwarden.container.tmpl`
 - `services/vaultwarden/quadlet/vaultwarden-ts.container.tmpl`
 - `services/vaultwarden/quadlet/vaultwarden-ts-serve.json.tmpl`
@@ -670,12 +680,14 @@ EOF
 ## Task 6: services/gatus/nixos.nix を作成
 
 **Files:**
+
 - Create: `services/gatus/nixos.nix`
 - Modify: `hosts/oci/configuration.nix` (import 追加)
 
 - [x] **Step 1: 既存の設定を確認**
 
 Read:
+
 - `services/gatus/quadlet/gatus.container`
 - `services/gatus/quadlet/gatus-ts.container.tmpl`
 - `services/gatus/quadlet/gatus-ts-serve.json.tmpl`
@@ -840,12 +852,14 @@ EOF
 ## Task 7: services/backup-kopia-b2/nixos.nix を作成
 
 **Files:**
+
 - Create: `services/backup-kopia-b2/nixos.nix`
 - Modify: `hosts/oci/configuration.nix` (import 追加)
 
 - [x] **Step 1: 既存の設定を確認**
 
 Read:
+
 - `services/backup-kopia-b2/Justfile`
 - `services/backup-kopia-b2/systemd/kopia-backup.service`
 - `services/backup-kopia-b2/systemd/kopia-backup.timer`
@@ -947,6 +961,7 @@ EOF
 ## Task 8: ドキュメント更新
 
 **Files:**
+
 - Modify: `AGENTS.md`
 - Modify: `docs/design-docs/index.md`
 
@@ -955,37 +970,37 @@ EOF
 ツールチェイン表に追加:
 
 ```markdown
-| NixOS デプロイ     | nixos-rebuild  | `just oci-deploy`        |
-| ディスク管理       | disko          | (nixos-anywhere 経由)    |
-| NixOS シークレット | sops-nix       | (nixos-rebuild 時に自動) |
+| NixOS デプロイ | nixos-rebuild | `just oci-deploy` |
+| ディスク管理 | disko | (nixos-anywhere 経由) |
+| NixOS シークレット | sops-nix | (nixos-rebuild 時に自動) |
 ```
 
 - [x] **Step 2: AGENTS.md のリポジトリ構成に hosts/ を追加**
 
 ```markdown
 hosts/
-└── oci/                              # OCI NixOS ホスト設定
-    ├── configuration.nix             # ホスト設定
-    ├── disko.nix                     # ディスクレイアウト
-    ├── vars.nix                      # ホスト変数
-    └── secrets.yaml                  # ホスト secrets (sops)
+└── oci/ # OCI NixOS ホスト設定
+├── configuration.nix # ホスト設定
+├── disko.nix # ディスクレイアウト
+├── vars.nix # ホスト変数
+└── secrets.yaml # ホスト secrets (sops)
 ```
 
 - [x] **Step 3: AGENTS.md の技術スタック表に NixOS を追加**
 
 ```markdown
-| ホスト管理     | NixOS (OCI Ampere A1 aarch64)           |
+| ホスト管理 | NixOS (OCI Ampere A1 aarch64) |
 ```
 
 - [x] **Step 4: AGENTS.md の操作セクションに OCI コマンドを追加**
 
 ```markdown
-just oci-deploy               # OCI NixOS デプロイ
-just oci-build                # OCI NixOS ビルド確認
-just oci-rollback             # OCI NixOS ロールバック
-just oci-status               # OCI サービス状態確認
-just oci-logs <service>       # OCI サービスログ
-just oci-ssh                  # OCI SSH 接続
+just oci-deploy # OCI NixOS デプロイ
+just oci-build # OCI NixOS ビルド確認
+just oci-rollback # OCI NixOS ロールバック
+just oci-status # OCI サービス状態確認
+just oci-logs <service> # OCI サービスログ
+just oci-ssh # OCI SSH 接続
 ```
 
 - [x] **Step 5: docs/design-docs/index.md に設計ドキュメントを追加**
@@ -1024,6 +1039,7 @@ OCI Console → Compute → Instances → Terminate (ブートボリュームも
 - [x] **Step 2: Ubuntu 22.04 ARM インスタンスを作成**
 
 OCI Console → Compute → Create Instance:
+
 - Shape: VM.Standard.A1.Flex (4 OCPU, 24 GB)
 - Image: Ubuntu 22.04 (aarch64)
 - Boot volume: 200 GB

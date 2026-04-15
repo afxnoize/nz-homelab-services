@@ -11,12 +11,24 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, disko, sops-nix }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      disko,
+      sops-nix,
+      treefmt-nix,
+    }:
     let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
-    in {
+    in
+    {
       devShells.x86_64-linux.default = pkgs.mkShell {
         packages = with pkgs; [
           kopia
@@ -25,6 +37,7 @@
           yq-go
           just
           gomplate
+          lefthook
         ];
       };
 
@@ -36,6 +49,8 @@
           ./hosts/oci/configuration.nix
         ];
       };
+
+      formatter.x86_64-linux = (treefmt-nix.lib.evalModule pkgs ./treefmt.nix).config.build.wrapper;
 
       packages.x86_64-linux.default = pkgs.kopia;
     };

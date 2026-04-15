@@ -1,17 +1,31 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
-  serveJson = pkgs.writeText "gatus-ts-serve.json" (builtins.toJSON {
-    TCP = { "443" = { HTTPS = true; }; };
-    Web = {
-      "\${TS_CERT_DOMAIN}:443" = {
-        Handlers = {
-          "/" = { Proxy = "http://127.0.0.1:8080"; };
+  serveJson = pkgs.writeText "gatus-ts-serve.json" (
+    builtins.toJSON {
+      TCP = {
+        "443" = {
+          HTTPS = true;
         };
       };
-    };
-  });
+      Web = {
+        "\${TS_CERT_DOMAIN}:443" = {
+          Handlers = {
+            "/" = {
+              Proxy = "http://127.0.0.1:8080";
+            };
+          };
+        };
+      };
+    }
+  );
 
-in {
+in
+{
   # sops secrets
   sops.secrets."gatus/ts_authkey" = {
     sopsFile = ./secrets.yaml;
@@ -84,10 +98,10 @@ in {
       image = "docker.io/tailscale/tailscale:latest";
       autoStart = true;
       environment = {
-        TS_HOSTNAME     = "gatus";
-        TS_STATE_DIR    = "/var/lib/tailscale";
+        TS_HOSTNAME = "gatus";
+        TS_STATE_DIR = "/var/lib/tailscale";
         TS_SERVE_CONFIG = "/config/serve.json";
-        TS_USERSPACE    = "true";
+        TS_USERSPACE = "true";
       };
       environmentFiles = [
         config.sops.templates."gatus-ts.env".path

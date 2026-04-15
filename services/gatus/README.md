@@ -4,16 +4,16 @@ Gatus ヘルスチェックダッシュボードを Podman Quadlet で運用。T
 
 ## 構成
 
-| ファイル | 役割 |
-|---------|------|
-| `Justfile` | 操作コマンド定義 |
-| `secrets.yaml` | Telegram Bot Token / Chat ID / Tailscale authkey（sops + age で暗号化） |
-| `config.yaml.tmpl` | Gatus 設定テンプレート（gomplate で展開） |
-| `quadlet/gatus.container` | Gatus コンテナ定義 |
-| `quadlet/gatus-ts.container.tmpl` | Tailscale サイドカーテンプレート |
-| `quadlet/gatus-ts-serve.json.tmpl` | Tailscale Serve 設定テンプレート |
-| `quadlet/gatus-data.volume` | データボリューム（SQLite） |
-| `quadlet/gatus-ts-state.volume` | Tailscale state ボリューム |
+| ファイル                           | 役割                                                                    |
+| ---------------------------------- | ----------------------------------------------------------------------- |
+| `Justfile`                         | 操作コマンド定義                                                        |
+| `secrets.yaml`                     | Telegram Bot Token / Chat ID / Tailscale authkey（sops + age で暗号化） |
+| `config.yaml.tmpl`                 | Gatus 設定テンプレート（gomplate で展開）                               |
+| `quadlet/gatus.container`          | Gatus コンテナ定義                                                      |
+| `quadlet/gatus-ts.container.tmpl`  | Tailscale サイドカーテンプレート                                        |
+| `quadlet/gatus-ts-serve.json.tmpl` | Tailscale Serve 設定テンプレート                                        |
+| `quadlet/gatus-data.volume`        | データボリューム（SQLite）                                              |
+| `quadlet/gatus-ts-state.volume`    | Tailscale state ボリューム                                              |
 
 ## セットアップ
 
@@ -46,16 +46,16 @@ just gatus start
 
 ## コマンド
 
-| コマンド | 説明 |
-|---------|------|
-| `just gatus deploy` | 設定生成 + Quadlet インストール + daemon-reload |
-| `just gatus start` | サービス起動 |
-| `just gatus stop` | サービス停止 |
-| `just gatus restart` | サービス再起動 |
-| `just gatus status` | サービス状態確認 |
-| `just gatus logs` | ログ表示 |
-| `just gatus logs-follow` | ログをリアルタイム追従 |
-| `just gatus update` | コンテナイメージ更新 |
+| コマンド                 | 説明                                            |
+| ------------------------ | ----------------------------------------------- |
+| `just gatus deploy`      | 設定生成 + Quadlet インストール + daemon-reload |
+| `just gatus start`       | サービス起動                                    |
+| `just gatus stop`        | サービス停止                                    |
+| `just gatus restart`     | サービス再起動                                  |
+| `just gatus status`      | サービス状態確認                                |
+| `just gatus logs`        | ログ表示                                        |
+| `just gatus logs-follow` | ログをリアルタイム追従                          |
+| `just gatus update`      | コンテナイメージ更新                            |
 
 ## アーキテクチャ
 

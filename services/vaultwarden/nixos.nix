@@ -1,16 +1,30 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
-  serveJson = pkgs.writeText "vaultwarden-ts-serve.json" (builtins.toJSON {
-    TCP = { "443" = { HTTPS = true; }; };
-    Web = {
-      "\${TS_CERT_DOMAIN}:443" = {
-        Handlers = {
-          "/" = { Proxy = "http://127.0.0.1:80"; };
+  serveJson = pkgs.writeText "vaultwarden-ts-serve.json" (
+    builtins.toJSON {
+      TCP = {
+        "443" = {
+          HTTPS = true;
         };
       };
-    };
-  });
-in {
+      Web = {
+        "\${TS_CERT_DOMAIN}:443" = {
+          Handlers = {
+            "/" = {
+              Proxy = "http://127.0.0.1:80";
+            };
+          };
+        };
+      };
+    }
+  );
+in
+{
   # sops secrets
   sops.secrets."vaultwarden/ts_authkey" = {
     sopsFile = ./secrets.yaml;
@@ -29,10 +43,10 @@ in {
       image = "docker.io/tailscale/tailscale:latest";
       autoStart = true;
       environment = {
-        TS_HOSTNAME     = "vaultwarden";
-        TS_STATE_DIR    = "/var/lib/tailscale";
+        TS_HOSTNAME = "vaultwarden";
+        TS_STATE_DIR = "/var/lib/tailscale";
         TS_SERVE_CONFIG = "/config/serve.json";
-        TS_USERSPACE    = "true";
+        TS_USERSPACE = "true";
       };
       environmentFiles = [
         config.sops.templates."vaultwarden-ts.env".path

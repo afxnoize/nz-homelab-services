@@ -22,9 +22,9 @@ ollama-ts (Tailscale Sidecar)
 
 ### アクセス経路
 
-| 用途 | URL | 備考 |
-|------|-----|------|
-| Open WebUI (ブラウザ) | `https://ollama.<ts-domain>/` | HTTPS via Tailscale Serve |
+| 用途                  | URL                               | 備考                          |
+| --------------------- | --------------------------------- | ----------------------------- |
+| Open WebUI (ブラウザ) | `https://ollama.<ts-domain>/`     | HTTPS via Tailscale Serve     |
 | Ollama API (Aider 等) | `http://ollama.<ts-domain>:11434` | TCP proxy via Tailscale Serve |
 
 ## Quadlet ファイル
@@ -84,10 +84,10 @@ podman exec ollama nvidia-smi
 
 ## トラブルシューティング
 
-| 症状 | 原因と対処 |
-|------|-----------|
-| GPU が認識されない | CDI スペックを確認: `nvidia-ctk cdi list` |
-| コンテナ起動後すぐ落ちる | `journalctl --user -u ollama` でログ確認 |
-| Tailscale に接続できない | authkey の有効期限、`TS_STATE_DIR` の永続化を確認 |
+| 症状                                | 原因と対処                                                           |
+| ----------------------------------- | -------------------------------------------------------------------- |
+| GPU が認識されない                  | CDI スペックを確認: `nvidia-ctk cdi list`                            |
+| コンテナ起動後すぐ落ちる            | `journalctl --user -u ollama` でログ確認                             |
+| Tailscale に接続できない            | authkey の有効期限、`TS_STATE_DIR` の永続化を確認                    |
 | Open WebUI から Ollama に繋がらない | `OLLAMA_BASE_URL` と Network 設定を確認 (同一ネットワーク名前空間か) |
-| Windows 再起動後に復帰しない | `loginctl enable-linger` を確認 |
+| Windows 再起動後に復帰しない        | `loginctl enable-linger` を確認                                      |

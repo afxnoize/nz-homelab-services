@@ -14,12 +14,12 @@
 
 ## Status Values
 
-| Status | 意味 |
-|---|---|
-| `proposed` | 提案中。議論の余地あり |
-| `accepted` | 採用済み。従うこと |
-| `deferred` | 保留。条件が揃ったら再検討 |
-| `superseded` | 別のADRに置き換え済み |
+| Status       | 意味                       |
+| ------------ | -------------------------- |
+| `proposed`   | 提案中。議論の余地あり     |
+| `accepted`   | 採用済み。従うこと         |
+| `deferred`   | 保留。条件が揃ったら再検討 |
+| `superseded` | 別のADRに置き換え済み      |
 
 ## Template
 

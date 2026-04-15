@@ -1,15 +1,28 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
-  serveJson = pkgs.writeText "adguard-home-ts-serve.json" (builtins.toJSON {
-    TCP = { "443" = { HTTPS = true; }; };
-    Web = {
-      "\${TS_CERT_DOMAIN}:443" = {
-        Handlers = {
-          "/" = { Proxy = "http://127.0.0.1:3000"; };
+  serveJson = pkgs.writeText "adguard-home-ts-serve.json" (
+    builtins.toJSON {
+      TCP = {
+        "443" = {
+          HTTPS = true;
         };
       };
-    };
-  });
+      Web = {
+        "\${TS_CERT_DOMAIN}:443" = {
+          Handlers = {
+            "/" = {
+              Proxy = "http://127.0.0.1:3000";
+            };
+          };
+        };
+      };
+    }
+  );
 
   fluentBitConf = pkgs.writeText "adguard-home-fluent-bit.conf" ''
     [SERVICE]
@@ -42,7 +55,8 @@ let
         Time_Keep    On
   '';
   adguardConfig = ./AdGuardHome.yaml;
-in {
+in
+{
   # sops secrets
   sops.secrets."adguard-home/ts_authkey" = {
     sopsFile = ./secrets.yaml;
@@ -67,11 +81,11 @@ in {
     adguard-home-ts = {
       image = "docker.io/tailscale/tailscale:latest";
       environment = {
-        TS_HOSTNAME    = "adguard-home";
-        TS_STATE_DIR   = "/var/lib/tailscale";
+        TS_HOSTNAME = "adguard-home";
+        TS_STATE_DIR = "/var/lib/tailscale";
         TS_SERVE_CONFIG = "/config/serve.json";
-        TS_USERSPACE   = "true";
-        TS_EXTRA_ARGS  = "--accept-dns=false";
+        TS_USERSPACE = "true";
+        TS_EXTRA_ARGS = "--accept-dns=false";
       };
       environmentFiles = [
         config.sops.templates."adguard-home-ts.env".path
@@ -117,7 +131,11 @@ in {
         "${fluentBitConf}:/fluent-bit/etc/fluent-bit.conf:ro"
         "${parsersConf}:/fluent-bit/etc/parsers.conf:ro"
       ];
-      cmd = [ "/fluent-bit/bin/fluent-bit" "-c" "/fluent-bit/etc/fluent-bit.conf" ];
+      cmd = [
+        "/fluent-bit/bin/fluent-bit"
+        "-c"
+        "/fluent-bit/etc/fluent-bit.conf"
+      ];
     };
   };
 }

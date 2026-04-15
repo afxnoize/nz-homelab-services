@@ -165,12 +165,12 @@ oci compute instance get --instance-id "$INSTANCE_ID" \
 
 ### Always Free の制約
 
-| リソース | 上限 |
-|---|---|
-| Ampere A1 | 合計 4 OCPU / 24 GB (複数 VM で分割可) |
-| Boot volume | 合計 200 GB |
-| Object Storage | 20 GB |
-| Boot volume backup | 5 個 |
+| リソース           | 上限                                   |
+| ------------------ | -------------------------------------- |
+| Ampere A1          | 合計 4 OCPU / 24 GB (複数 VM で分割可) |
+| Boot volume        | 合計 200 GB                            |
+| Object Storage     | 20 GB                                  |
+| Boot volume backup | 5 個                                   |
 
 1 VM に全リソースを割り当てるのが最もシンプル。
 

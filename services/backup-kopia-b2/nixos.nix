@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 {
   # sops secrets
   # NOTE: These secrets are used by the manual `kopia repository connect` step.
