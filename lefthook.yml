@@ -1,0 +1,9 @@
+pre-commit:
+  commands:
+    treefmt:
+      run: nix fmt -- --fail-on-change
+
+pre-push:
+  commands:
+    nix-eval:
+      run: nix eval .#nixosConfigurations.oci.config.system.build.toplevel.drvPath

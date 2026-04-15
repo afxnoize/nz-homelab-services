@@ -17,15 +17,20 @@
 
 ### ツールチェイン
 
-| 用途               | ツール         | コマンド                 |
-| ------------------ | -------------- | ------------------------ |
-| 環境管理           | Nix Flakes     | `nix develop`            |
-| タスクランナー     | just           | `just <recipe>`          |
-| バックアップ       | Kopia          | `kopia` (via Justfile)   |
-| コンテナ           | Podman Quadlet | `systemctl --user`       |
+| 用途               | ツール         | コマンド                     |
+| ------------------ | -------------- | ---------------------------- |
+| 環境管理           | Nix Flakes     | `nix develop`                |
+| タスクランナー     | just           | `just <recipe>`              |
+| バックアップ       | Kopia          | `kopia` (via Justfile)       |
+| コンテナ           | Podman Quadlet | `systemctl --user`           |
 | シークレット暗号化 | SOPS + age     | `sops --encrypt / --decrypt` |
 | テンプレート展開   | gomplate       | `gomplate -f in.tmpl -o out` |
-| YAML/JSON 操作     | yq             | `yq`                     |
+| YAML/JSON 操作     | yq             | `yq`                         |
+| NixOS デプロイ     | nixos-rebuild  | `just oci-deploy`            |
+| ディスク管理       | disko          | (nixos-anywhere 経由)        |
+| NixOS シークレット | sops-nix       | (nixos-rebuild 時に自動)     |
+| Git hooks          | lefthook       | `lefthook install`           |
+| コードフォーマット | treefmt-nix    | `nix fmt`                    |
 
 ### 操作
 
@@ -36,6 +41,12 @@ just backup <recipe>          # kopia 操作
 just vaultwarden <recipe>     # vaultwarden 操作
 just gatus <recipe>           # gatus 操作
 just ollama <recipe>          # ollama 操作 (WSL2 マシン向け)
+just oci-deploy               # OCI NixOS デプロイ
+just oci-build                # OCI NixOS ビルド確認
+just oci-rollback             # OCI NixOS ロールバック
+just oci-status               # OCI サービス状態確認
+just oci-logs <service>       # OCI サービスログ
+just oci-ssh                  # OCI SSH 接続
 ```
 
 ## アーキテクチャ
@@ -54,18 +65,19 @@ just ollama <recipe>          # ollama 操作 (WSL2 マシン向け)
 
 ## 技術スタック
 
-| レイヤー       | 技術                                     |
-| -------------- | ---------------------------------------- |
-| バックアップ   | Kopia (S3 互換プロトコルで B2 に接続)    |
-| ストレージ     | Backblaze B2                             |
-| パスワード管理 | Vaultwarden + Tailscale Serve            |
-| ヘルスチェック | Gatus + Telegram 通知                    |
-| DNS フィルタ   | AdGuard Home + Tailscale Serve           |
-| LLM 推論      | Ollama + Open WebUI + Tailscale Serve (WSL2 / NVIDIA GPU) |
-| シークレット   | SOPS (age 暗号化) → Git 管理            |
-| スケジュール   | systemd user timer (daily)               |
-| コンテナ       | Podman Quadlet (systemd 統合)            |
-| 環境管理       | Nix Flakes (`flake.nix` + `flake.lock`) |
+| レイヤー       | 技術                                                      |
+| -------------- | --------------------------------------------------------- |
+| バックアップ   | Kopia (S3 互換プロトコルで B2 に接続)                     |
+| ストレージ     | Backblaze B2                                              |
+| パスワード管理 | Vaultwarden + Tailscale Serve                             |
+| ヘルスチェック | Gatus + Telegram 通知                                     |
+| DNS フィルタ   | AdGuard Home + Tailscale Serve                            |
+| LLM 推論       | Ollama + Open WebUI + Tailscale Serve (WSL2 / NVIDIA GPU) |
+| シークレット   | SOPS (age 暗号化) → Git 管理                              |
+| スケジュール   | systemd user timer (daily)                                |
+| コンテナ       | Podman Quadlet (systemd 統合)                             |
+| 環境管理       | Nix Flakes (`flake.nix` + `flake.lock`)                   |
+| ホスト管理     | NixOS (OCI Ampere A1 aarch64)                             |
 
 ---
 
@@ -92,6 +104,12 @@ docs/
         ├── log-strategy.md           # ログ戦略
         ├── quadlet-conventions.md    # Quadlet 構成規約
         └── exposure-models.md        # 公開モデル
+hosts/
+└── oci/                              # OCI NixOS ホスト設定
+    ├── configuration.nix             # ホスト設定
+    ├── disko.nix                     # ディスクレイアウト
+    ├── vars.nix                      # ホスト変数
+    └── secrets.yaml                  # ホスト secrets (sops)
 services/
 ├── backup-kopia-b2/                  # → README.md 参照
 ├── vaultwarden/                      # → README.md 参照
@@ -114,14 +132,14 @@ services/
 
 コード変更時、対応するドキュメントを同一コミットで更新する。
 
-| Code Change | Update Required |
-|---|---|
-| サービス追加/変更/削除 | AGENTS.md, docs/design-docs/ |
-| 設計判断 | docs/design-docs/adr/ に ADR ファイル追加 |
-| 依存関係の追加/変更 | AGENTS.md (ツールチェイン表) |
-| バグ修正（非自明なもの） | 該当サービスの README.md |
-| 新しいパターンの適用 | ARCHITECTURE.md |
-| 運用上の落とし穴の発見 | docs/knowledge.md |
+| Code Change              | Update Required                           |
+| ------------------------ | ----------------------------------------- |
+| サービス追加/変更/削除   | AGENTS.md, docs/design-docs/              |
+| 設計判断                 | docs/design-docs/adr/ に ADR ファイル追加 |
+| 依存関係の追加/変更      | AGENTS.md (ツールチェイン表)              |
+| バグ修正（非自明なもの） | 該当サービスの README.md                  |
+| 新しいパターンの適用     | ARCHITECTURE.md                           |
+| 運用上の落とし穴の発見   | docs/knowledge.md                         |
 
 ---
 

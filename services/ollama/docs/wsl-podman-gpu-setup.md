@@ -4,11 +4,11 @@ Ollama サービスの前提環境を WSL2 上に構築する手順。
 
 ## 前提条件
 
-| 項目 | 要件 |
-|------|------|
-| OS | Windows 11 (または Windows 10 21H2+) |
-| GPU | NVIDIA (Windows 側に最新ドライバをインストール済み) |
-| WSL | 最新版 (`wsl --update` で更新) |
+| 項目 | 要件                                                |
+| ---- | --------------------------------------------------- |
+| OS   | Windows 11 (または Windows 10 21H2+)                |
+| GPU  | NVIDIA (Windows 側に最新ドライバをインストール済み) |
+| WSL  | 最新版 (`wsl --update` で更新)                      |
 
 > **注意**: WSL2 内に Linux 用 NVIDIA ドライバをインストールしてはいけない。
 > Windows ドライバが `/usr/lib/wsl/lib/` に CUDA ライブラリを自動エクスポートする。
@@ -113,9 +113,9 @@ podman run --rm --device nvidia.com/gpu=all \
 
 ## 運用上の注意
 
-| 状況 | 対応 |
-|------|------|
-| Windows 側の NVIDIA ドライバ更新後 | `nvidia-ctk cdi generate` を再実行 |
-| WSL の更新後 | `systemctl --user status` で systemd 動作を確認 |
-| CDI `unresolvable` エラー | パーミッション (644) と toolkit バージョンを確認 |
-| コンテナが再起動後に復帰しない | `loginctl show-user $USER` で `Linger=yes` を確認 |
+| 状況                               | 対応                                              |
+| ---------------------------------- | ------------------------------------------------- |
+| Windows 側の NVIDIA ドライバ更新後 | `nvidia-ctk cdi generate` を再実行                |
+| WSL の更新後                       | `systemctl --user status` で systemd 動作を確認   |
+| CDI `unresolvable` エラー          | パーミッション (644) と toolkit バージョンを確認  |
+| コンテナが再起動後に復帰しない     | `loginctl show-user $USER` で `Linger=yes` を確認 |

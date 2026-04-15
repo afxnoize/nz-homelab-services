@@ -22,16 +22,16 @@ services/<name>/
 
 以下のレシピをすべて実装する。
 
-| レシピ | 内容 |
-|---|---|
-| `deploy` | テンプレート展開 → quadlet dir へコピー → `daemon-reload` |
-| `start` | `systemctl --user start <name>` |
-| `stop` | `systemctl --user stop <name>` |
-| `restart` | `systemctl --user restart <name>` |
-| `status` | `systemctl --user status <name> --no-pager` |
-| `logs` | `journalctl --user -u <name> --no-pager -n 50` |
-| `logs-follow` | `journalctl --user -u <name> -f` |
-| `update` | `podman auto-update` |
+| レシピ        | 内容                                                      |
+| ------------- | --------------------------------------------------------- |
+| `deploy`      | テンプレート展開 → quadlet dir へコピー → `daemon-reload` |
+| `start`       | `systemctl --user start <name>`                           |
+| `stop`        | `systemctl --user stop <name>`                            |
+| `restart`     | `systemctl --user restart <name>`                         |
+| `status`      | `systemctl --user status <name> --no-pager`               |
+| `logs`        | `journalctl --user -u <name> --no-pager -n 50`            |
+| `logs-follow` | `journalctl --user -u <name> -f`                          |
+| `update`      | `podman auto-update`                                      |
 
 ## Root Justfile への登録
 

@@ -26,3 +26,39 @@ status-all:
     just vaultwarden status
     just gatus status
     just adguard-home status
+
+####################
+# OCI NixOS host
+####################
+
+oci_host := `sops -d --extract '["oci_host"]' hosts/oci/secrets.yaml`
+
+# Deploy NixOS configuration to OCI host
+[group('oci')]
+oci-deploy:
+    nix run nixpkgs#nixos-rebuild -- switch --flake .#oci --target-host root@{{oci_host}} --build-host root@{{oci_host}}
+
+# Build NixOS configuration without deploying
+[group('oci')]
+oci-build:
+    nix run nixpkgs#nixos-rebuild -- build --flake .#oci --target-host root@{{oci_host}} --build-host root@{{oci_host}}
+
+# Rollback to previous NixOS generation
+[group('oci')]
+oci-rollback:
+    nix run nixpkgs#nixos-rebuild -- switch --flake .#oci --target-host root@{{oci_host}} --rollback --build-host root@{{oci_host}}
+
+# Show status of OCI services
+[group('oci')]
+oci-status:
+    ssh root@{{oci_host}} 'systemctl list-units "podman-*" --no-pager'
+
+# Show logs for an OCI service
+[group('oci')]
+oci-logs service:
+    ssh root@{{oci_host}} 'journalctl -u podman-{{service}} -n 50 --no-pager'
+
+# SSH into OCI host
+[group('oci')]
+oci-ssh:
+    ssh root@{{oci_host}}

@@ -11,6 +11,7 @@ secrets.yaml       sops exec-env        gomplate
 ```
 
 **deploy レシピの骨格:**
+
 ```bash
 export TS_DOMAIN=$(tailscale status --json | jq -r '.MagicDNSSuffix')
 sops exec-env ./secrets.yaml '
@@ -19,6 +20,7 @@ sops exec-env ./secrets.yaml '
 ```
 
 **テンプレート側の参照:**
+
 ```ini
 Environment=TS_AUTHKEY={{ .Env.ts_authkey }}
 Environment=DOMAIN=https://app.{{ .Env.TS_DOMAIN }}
