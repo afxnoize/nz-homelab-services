@@ -59,7 +59,7 @@ oci-status:
 oci-logs service:
     ssh root@{{oci_host}} 'journalctl -u {{service}}.service -n 50 --no-pager'
 
-# SSH into OCI host
+# SSH into OCI host (引数なしで対話シェル、引数ありでコマンド実行)
 [group('oci')]
-oci-ssh:
-    ssh root@{{oci_host}}
+oci-ssh *args:
+    ssh root@{{oci_host}} {{args}}
