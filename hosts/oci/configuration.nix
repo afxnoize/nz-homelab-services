@@ -72,6 +72,7 @@ in
   environment.systemPackages = with pkgs; [
     vim
     git
+    jq
     just
   ];
 
