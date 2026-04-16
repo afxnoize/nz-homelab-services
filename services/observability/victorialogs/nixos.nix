@@ -13,7 +13,7 @@
       exec = [
         "-storageDataPath=/storage"
         "-retentionPeriod=${vars.retention.logs}"
-        "--retention.maxDiskSpaceUsageBytes=${vars.diskBudget.logs}"
+        "-retention.maxDiskSpaceUsageBytes=${vars.diskBudget.logs}"
         "-httpListenAddr=:${toString vars.ports.vl}"
       ];
       volumes = [
