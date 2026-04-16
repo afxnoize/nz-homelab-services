@@ -119,6 +119,7 @@
       "targets": [
         {
           "expr": "* | stats by (service) count() as logs",
+          "queryType": "range",
           "refId": "A"
         }
       ]
