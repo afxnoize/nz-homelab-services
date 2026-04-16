@@ -1,0 +1,49 @@
+// --- journald ---
+loki.source.journal "system" {
+  path       = "/var/log/journal"
+  forward_to = [loki.write.vl.receiver]
+  labels     = { host = "oci-nix" }
+  relabel_rules = loki.relabel.journal.rules
+}
+
+loki.relabel "journal" {
+  forward_to = []
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "service"
+  }
+  rule {
+    source_labels = ["__journal_container_name"]
+    target_label  = "container"
+  }
+}
+
+// --- AdGuard querylog (M4 activation) ---
+// loki.source.file "adguard_querylog" {
+//   targets    = [{ __path__ = "/var/log/adguard/querylog.json", service = "adguard-home" }]
+//   forward_to = [loki.write.vl.receiver]
+// }
+
+// --- metrics: host node (built-in unix exporter) ---
+prometheus.exporter.unix "host" { }
+
+prometheus.scrape "node" {
+  targets    = prometheus.exporter.unix.host.targets
+  forward_to = [prometheus.remote_write.vm.receiver]
+  job_name   = "node"
+}
+
+// --- metrics: Alloy self ---
+prometheus.scrape "alloy" {
+  targets    = [{ __address__ = "127.0.0.1:12345", job = "alloy" }]
+  forward_to = [prometheus.remote_write.vm.receiver]
+}
+
+// --- writes ---
+loki.write "vl" {
+  endpoint { url = "http://127.0.0.1:9428/insert/loki/api/v1/push" }
+}
+
+prometheus.remote_write "vm" {
+  endpoint { url = "http://127.0.0.1:8428/api/v1/write" }
+}
