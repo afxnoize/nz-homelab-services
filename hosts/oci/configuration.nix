@@ -29,7 +29,10 @@ in
   networking.firewall = {
     enable = true;
     allowedTCPPorts = [ 22 ];
-    trustedInterfaces = [ "tailscale0" ];
+    trustedInterfaces = [
+      "tailscale0"
+      "podman0" # Grafana (bridge) → VL/VM (host) 通信に必要
+    ];
   };
 
   # Tailscale (host-level)
