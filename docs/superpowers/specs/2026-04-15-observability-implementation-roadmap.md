@@ -35,12 +35,12 @@ Phase 2 観測スタック (Alloy + VictoriaLogs + VictoriaMetrics + Grafana + v
 
 ### M1: 基盤バックエンド + OCI Alloy + Grafana (E2E 疎通)
 
-| 項目         | 内容                                                                                                                                                                                                                                                                                                |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| scope        | VictoriaLogs / VictoriaMetrics / Alloy (OCI) / Grafana の quadlet-nix 化。Alloy は journald source + 既存サービス metrics scrape + remote_write / loki push を担当。Grafana に VL / VM を datasource 登録                                                                                           |
-| done 定義    | ① journald のログが Grafana 上で LogsQL で引ける<br>② vaultwarden / gatus / adguard-home の up メトリクスが Grafana 上で PromQL で引ける<br>③ 最低 1 panel (例: 「ホスト稼働状況」) が描画される<br>④ `just oci-status` に新規 4 ユニットが反映<br>⑤ AGENTS.md / log-strategy.md / ADR-011 反映済み |
-| PR           | 1 本 (`feat/obs/m1-foundation`)                                                                                                                                                                                                                                                                     |
-| out of scope | WSL2 / LiRu Alloy、AdGuard querylog 直読み、vmalert、ダッシュボード整備                                                                                                                                                                                                                             |
+| 項目         | 内容                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| scope        | VictoriaLogs / VictoriaMetrics / Alloy (OCI) / Grafana の quadlet-nix 化。Alloy は journald source + **ホスト node メトリクス (内蔵 unix exporter) + Alloy self メトリクス**の scrape + remote_write / loki push を担当。Grafana に VL / VM を datasource 登録 (M1 spec で確定)                                                                                             |
+| done 定義    | ① journald のログが Grafana 上で LogsQL で引ける<br>② **ホスト node + Alloy self の up メトリクスが Grafana 上で PromQL で引ける** (M1 spec 2026-04-16 で amend: 既存サービス /metrics は未実装のため M2 に移譲)<br>③ 最低 1 panel (例: 「ホスト稼働状況」) が描画される<br>④ `just oci-status` に新規 4 ユニットが反映<br>⑤ AGENTS.md / log-strategy.md / ADR-011 反映済み |
+| PR           | 1 本 (`feat/obs/m1-foundation`)                                                                                                                                                                                                                                                                                                                                             |
+| out of scope | WSL2 / LiRu Alloy、AdGuard querylog 直読み、vmalert、ダッシュボード整備、**既存サービス `/metrics` 有効化および scrape (M2)**                                                                                                                                                                                                                                               |
 
 ### M4: AdGuard Home fluent-bit サイドカー撤去
 
@@ -53,12 +53,12 @@ Phase 2 観測スタック (Alloy + VictoriaLogs + VictoriaMetrics + Grafana + v
 
 ### M2: 初期ダッシュボード整備
 
-| 項目         | 内容                                                                                                                                                                                           |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| scope        | ホスト / コンテナ / 既存サービスの最低限ダッシュボード整備。provisioning で git 管理                                                                                                           |
-| done 定義    | ① ホストリソース (CPU / RAM / Disk / Network) ダッシュボード 1 枚<br>② サービス別 (vaultwarden / gatus / adguard-home) ログ検索ビュー 1 枚<br>③ ダッシュボード JSON が provisioning で復元可能 |
-| PR           | 1 本 (`feat/obs/m2-dashboards`)                                                                                                                                                                |
-| out of scope | アラート定義 / cadvisor 等の新規 exporter 追加判断                                                                                                                                             |
+| 項目         | 内容                                                                                                                                                                                                                                                                                                                 |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| scope        | **既存サービスの `/metrics` 有効化** (vaultwarden admin metrics、gatus の publishPort 経由公開、adguard-exporter サイドカー追加) + Alloy 設定への scrape 追加。ホスト / コンテナ / 既存サービスの最低限ダッシュボード整備。provisioning で git 管理                                                                  |
+| done 定義    | ① ホストリソース (CPU / RAM / Disk / Network) ダッシュボード 1 枚<br>② **サービス up (`up{job=~"vaultwarden\|gatus\|adguard-home"}`) が PromQL で引け、サービス別ダッシュボードに描画**<br>③ サービス別 (vaultwarden / gatus / adguard-home) ログ検索ビュー 1 枚<br>④ ダッシュボード JSON が provisioning で復元可能 |
+| PR           | 1 本 (`feat/obs/m2-dashboards`)                                                                                                                                                                                                                                                                                      |
+| out of scope | アラート定義 / cadvisor 等の新規 exporter 追加判断                                                                                                                                                                                                                                                                   |
 
 ### M3: リモートホスト Alloy (手書きモード) + LiRu / WSL2 適用
 
@@ -96,21 +96,21 @@ M1 (foundation)
 
 既存 docs spec + ADR-010 / 011 の未解決事項を、どの M spec で決着させるか固定する。
 
-| #   | 未解決事項                                                                       | 決着 M spec | 備考                                                                                 |
-| --- | -------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------ |
-| 1   | VL 保持期間 / ディスク予算 (OCI 100GB 内配分)                                    | **M1**      | VL 立ち上げ時に初期値確定。後日調整可だが Phase 2 開始時点の数字を固定               |
-| 2   | VM retention / ディスク予算 (同上)                                               | **M1**      | 同上                                                                                 |
-| 3   | VM backup 戦略 (vmbackup / ディスクスナップショット / 未採用)                    | **M1**      | homelab スケール。**推奨: OCI ブートボリュームスナップショット依存**                 |
-| 4   | リモート push 受信口の auth (Tailscale iface bind のみ / 追加 token / mTLS)      | **M1**      | 受信口を立てる M。**推奨: Tailscale iface bind のみ**                                |
-| 5   | 初期 scrape 対象 exporter (cadvisor / node_exporter / サービス /metrics のみ)    | **M1**      | Alloy の初期 scrape 設定。**推奨: 既存サービスの /metrics 提供ぶんのみ**             |
-| 6   | Grafana 認証方式 (Tailscale Serve 前段 + ローカル admin / OIDC / 他)             | **M1**      | **推奨: Tailscale Serve 前段 + ローカル admin** (vaultwarden / adguard と同パターン) |
-| 7   | M1 の初期 panel 1 本の内容 (ホスト稼働 / サービス一覧 / ログタイムライン 等)     | **M1**      | E2E 疎通検証用の最小 panel                                                           |
-| 8   | ダッシュボード資産 (自作 / Grafana.com テンプレ / VictoriaMetrics 公式流用)      | **M2**      | M2 本体の判断                                                                        |
-| 9   | Alloy 設定の共通化 (OCI / LiRu / WSL2 で設定構造をどう揃えるか)                  | **M3**      | M1 で雛形、M3 で共通化の形を確定                                                     |
-| 10  | K-013 watchdog と Alloy の統合 (Alloy 独自リトライで十分 / 既存 watchdog に追加) | **M3**      | WSL2 適用時に判断                                                                    |
-| 11  | ADR-006 supersede のタイミング (fluent-bit 撤去コミットで status 更新)           | **M4**      | 撤去コミットと同一 PR で ADR status を superseded に                                 |
-| 12  | vmalert 通知 sink (Alertmanager 経由 / webhook 直 Telegram)                      | **M5**      |                                                                                      |
-| 13  | Gatus と vmalert の二重通知ポリシー (同一障害が両経路で鳴るケース)               | **M5**      | 通知 sink 決定とセット                                                               |
+| #   | 未解決事項                                                                       | 決着 M spec | 備考                                                                                                   |
+| --- | -------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------ |
+| 1   | VL 保持期間 / ディスク予算 (OCI 100GB 内配分)                                    | **M1**      | VL 立ち上げ時に初期値確定。後日調整可だが Phase 2 開始時点の数字を固定                                 |
+| 2   | VM retention / ディスク予算 (同上)                                               | **M1**      | 同上                                                                                                   |
+| 3   | VM backup 戦略 (vmbackup / ディスクスナップショット / 未採用)                    | **M1**      | homelab スケール。**推奨: OCI ブートボリュームスナップショット依存**                                   |
+| 4   | リモート push 受信口の auth (Tailscale iface bind のみ / 追加 token / mTLS)      | **M1**      | 受信口を立てる M。**推奨: Tailscale iface bind のみ**                                                  |
+| 5   | 初期 scrape 対象 exporter (cadvisor / node_exporter / サービス /metrics のみ)    | **M1→M2**   | M1 spec (2026-04-16) で決着: M1 はホスト node + Alloy self のみ。既存サービス /metrics は M2 で enable |
+| 6   | Grafana 認証方式 (Tailscale Serve 前段 + ローカル admin / OIDC / 他)             | **M1**      | **推奨: Tailscale Serve 前段 + ローカル admin** (vaultwarden / adguard と同パターン)                   |
+| 7   | M1 の初期 panel 1 本の内容 (ホスト稼働 / サービス一覧 / ログタイムライン 等)     | **M1**      | E2E 疎通検証用の最小 panel                                                                             |
+| 8   | ダッシュボード資産 (自作 / Grafana.com テンプレ / VictoriaMetrics 公式流用)      | **M2**      | M2 本体の判断                                                                                          |
+| 9   | Alloy 設定の共通化 (OCI / LiRu / WSL2 で設定構造をどう揃えるか)                  | **M3**      | M1 で雛形、M3 で共通化の形を確定                                                                       |
+| 10  | K-013 watchdog と Alloy の統合 (Alloy 独自リトライで十分 / 既存 watchdog に追加) | **M3**      | WSL2 適用時に判断                                                                                      |
+| 11  | ADR-006 supersede のタイミング (fluent-bit 撤去コミットで status 更新)           | **M4**      | 撤去コミットと同一 PR で ADR status を superseded に                                                   |
+| 12  | vmalert 通知 sink (Alertmanager 経由 / webhook 直 Telegram)                      | **M5**      |                                                                                                        |
+| 13  | Gatus と vmalert の二重通知ポリシー (同一障害が両経路で鳴るケース)               | **M5**      | 通知 sink 決定とセット                                                                                 |
 
 「推奨」は roadmap が示唆するデフォルトで、各 M spec で覆すことは妨げない。
 
