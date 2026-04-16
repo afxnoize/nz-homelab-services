@@ -6,6 +6,7 @@ mod vaultwarden 'services/vaultwarden'
 mod gatus 'services/gatus'
 mod adguard-home 'services/adguard-home'
 mod ollama 'services/ollama'          # WSL2 machine — not in deploy-all
+mod observability 'services/observability'
 
 ####################
 # Orchestrate
