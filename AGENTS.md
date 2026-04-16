@@ -41,6 +41,7 @@ just backup <recipe>          # kopia 操作
 just vaultwarden <recipe>     # vaultwarden 操作
 just gatus <recipe>           # gatus 操作
 just ollama <recipe>          # ollama 操作 (WSL2 マシン向け)
+just observability <recipe>       # observability 操作
 just oci-deploy               # OCI NixOS デプロイ
 just oci-build                # OCI NixOS ビルド確認
 just oci-rollback             # OCI NixOS ロールバック
@@ -62,24 +63,25 @@ just oci-ssh                  # OCI SSH 接続
 - [services/gatus/README.md](services/gatus/README.md) — Gatus ヘルスチェック + Telegram 通知
 - [services/adguard-home/README.md](services/adguard-home/README.md) — AdGuard Home DNS + Tailscale Serve
 - [services/ollama/README.md](services/ollama/README.md) — Ollama + Open WebUI + Tailscale Serve (WSL2 / GPU)
+- [services/observability/README.md](services/observability/README.md) — Alloy + VictoriaLogs + VictoriaMetrics + Grafana 観測スタック
 
 ## 技術スタック
 
-| レイヤー       | 技術                                                                |
-| -------------- | ------------------------------------------------------------------- |
-| バックアップ   | Kopia (S3 互換プロトコルで B2 に接続)                               |
-| ストレージ     | Backblaze B2                                                        |
-| パスワード管理 | Vaultwarden + Tailscale Serve                                       |
-| ヘルスチェック | Gatus + Telegram 通知                                               |
-| 観測スタック   | Alloy + VictoriaLogs + VictoriaMetrics + Grafana (Phase 2 / 計画中) |
-| アラート       | Gatus (外形) + vmalert (メトリクス) → Telegram (Phase 2)            |
-| DNS フィルタ   | AdGuard Home + Tailscale Serve                                      |
-| LLM 推論       | Ollama + Open WebUI + Tailscale Serve (WSL2 / NVIDIA GPU)           |
-| シークレット   | SOPS (age 暗号化) → Git 管理                                        |
-| スケジュール   | systemd user timer (daily)                                          |
-| コンテナ       | Podman Quadlet (systemd 統合)                                       |
-| 環境管理       | Nix Flakes (`flake.nix` + `flake.lock`)                             |
-| ホスト管理     | NixOS (OCI Ampere A1 aarch64)                                       |
+| レイヤー       | 技術                                                                                          |
+| -------------- | --------------------------------------------------------------------------------------------- |
+| バックアップ   | Kopia (S3 互換プロトコルで B2 に接続)                                                         |
+| ストレージ     | Backblaze B2                                                                                  |
+| パスワード管理 | Vaultwarden + Tailscale Serve                                                                 |
+| ヘルスチェック | Gatus + Telegram 通知                                                                         |
+| 観測スタック   | Alloy + VictoriaLogs + VictoriaMetrics + Grafana (Phase 2 / OCI 稼働中、リモート Alloy は M3) |
+| アラート       | Gatus (外形) + vmalert (メトリクス) → Telegram (Phase 2)                                      |
+| DNS フィルタ   | AdGuard Home + Tailscale Serve                                                                |
+| LLM 推論       | Ollama + Open WebUI + Tailscale Serve (WSL2 / NVIDIA GPU)                                     |
+| シークレット   | SOPS (age 暗号化) → Git 管理                                                                  |
+| スケジュール   | systemd user timer (daily)                                                                    |
+| コンテナ       | Podman Quadlet (systemd 統合)                                                                 |
+| 環境管理       | Nix Flakes (`flake.nix` + `flake.lock`)                                                       |
+| ホスト管理     | NixOS (OCI Ampere A1 aarch64)                                                                 |
 
 ---
 
@@ -117,7 +119,8 @@ services/
 ├── vaultwarden/                      # → README.md 参照
 ├── gatus/                            # → README.md 参照
 ├── adguard-home/                     # → README.md 参照
-└── ollama/                           # → README.md 参照 (WSL2 マシン)
+├── ollama/                           # → README.md 参照 (WSL2 マシン)
+└── observability/                    # → README.md 参照 (観測スタック)
 ```
 
 ## 設計判断

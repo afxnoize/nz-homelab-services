@@ -1,0 +1,38 @@
+default:
+    @just --list
+
+####################
+# Observe (OCI NixOS — systemctl は root@oci で実行)
+####################
+
+oci_host := `sops -d --extract '["oci_host"]' ../../hosts/oci/secrets.yaml`
+
+# Show status of observability units
+[group('observe')]
+status:
+    ssh root@{{oci_host}} 'systemctl list-units --no-pager alloy.service victorialogs.service victoriametrics.service grafana.service grafana-ts.service'
+
+# Show logs for an observability unit
+[group('observe')]
+logs unit="alloy" count="50":
+    ssh root@{{oci_host}} 'journalctl -u {{unit}}.service -n {{count}} --no-pager'
+
+# Follow logs for an observability unit
+[group('observe')]
+logs-follow unit="alloy":
+    ssh root@{{oci_host}} 'journalctl -u {{unit}}.service -f'
+
+# Restart all observability units
+[group('lifecycle')]
+restart:
+    ssh root@{{oci_host}} 'systemctl restart victorialogs victoriametrics alloy grafana-ts grafana'
+
+# Quick VL query (recent 5m logs)
+[group('debug')]
+vl-query query="_time:5m":
+    ssh root@{{oci_host}} 'curl -sG http://127.0.0.1:9428/select/logsql/query --data-urlencode "query={{query}}" | head -10'
+
+# Quick VM query (up metrics)
+[group('debug')]
+vm-query query="up":
+    ssh root@{{oci_host}} 'curl -sG http://127.0.0.1:8428/api/v1/query --data-urlencode "query={{query}}" | jq -r ".data.result[]"'
