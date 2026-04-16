@@ -9,6 +9,7 @@ in
     ../../services/adguard-home/nixos.nix
     ../../services/vaultwarden/nixos.nix
     ../../services/gatus/nixos.nix
+    ../../services/observability # default.nix を暗黙 import
   ];
 
   # Boot (OCI ARM — UEFI + iSCSI boot volume)
@@ -25,8 +26,11 @@ in
   # Networking
   networking.hostName = "oci-nix";
   networking.useDHCP = true;
-  networking.firewall.enable = true;
-  networking.firewall.allowedTCPPorts = [ 22 ];
+  networking.firewall = {
+    enable = true;
+    allowedTCPPorts = [ 22 ];
+    trustedInterfaces = [ "tailscale0" ];
+  };
 
   # Tailscale (host-level)
   services.tailscale.enable = true;
