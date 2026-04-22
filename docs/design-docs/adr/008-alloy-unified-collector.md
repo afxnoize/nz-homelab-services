@@ -70,7 +70,7 @@ flowchart LR
 
 ### 移行手順（概略）
 
-1. Alloy の Quadlet / NixOS モジュールを整備し、journald source + 既存サービスのメトリクス scrape を動作確認
-2. ダッシュボード・アラートを整備
-3. AdGuard Home の `querylog.json` を Alloy 直読みに切り替え、fluent-bit サイドカー Quadlet を撤去
-4. [log-strategy.md](../patterns/log-strategy.md) を本構成に書き換え、[ADR-006](006-adguard-querylog-fluent-bit-sidecar.md) を superseded として残す
+1. [x] Alloy の Quadlet / NixOS モジュールを整備し、journald source + 既存サービスのメトリクス scrape を動作確認 (M1 完了)
+2. [ ] ダッシュボード・アラートを整備 (M2 / M5)
+3. [x] AdGuard Home の `querylog.json` を Alloy 直読みに切り替え、fluent-bit サイドカー Quadlet を撤去 (M4 完了)
+4. [ ] [log-strategy.md](../patterns/log-strategy.md) を本構成に書き換え、[ADR-006](006-adguard-querylog-fluent-bit-sidecar.md) を superseded として残す (log-strategy.md は M1 で格上げ済み、ADR-006 superseded も M1 で実施済み → 本項は close 可)
