@@ -27,7 +27,7 @@ AdGuard Home のアプリケーションログはコンテナ stdout から jour
 
 ```
 adguard-home → stdout       → journald → Alloy (journal source) → VictoriaLogs
-adguard-home → querylog.json → adguard-home-data (ro mount) → Alloy (loki.source.file) → VictoriaLogs
+adguard-home → querylog.json (volume: adguard-home-data ro) → Alloy (loki.source.file) → VictoriaLogs
 ```
 
 VictoriaLogs 上では `service` ラベルでフィルタする。journald 経由は systemd unit 名がそのまま `service` に入るため `.service` サフィックスが付き、Alloy の `loki.source.file` 側は静的ラベル `adguard-home` になる。
@@ -94,3 +94,5 @@ services/adguard-home/
     ├── adguard-home-data.volume          # AdGuard Home データ永続化
     └── adguard-home-ts-state.volume      # Tailscale 状態永続化
 ```
+
+> **Note:** `quadlet/adguard-home-querylog*.{container,volume}` および `fluent-bit/*.conf` がディスク上に残っている場合、それらは OCI NixOS 経路以前のローカル podman デプロイ (`just adguard-home deploy`) 用の残骸であり、本 README のファイル構成には載せていない。別途クリーンアップ予定。
