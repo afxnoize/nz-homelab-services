@@ -10,7 +10,7 @@
    秘匿値は SOPS で age 暗号化してリポジトリ管理する。デプロイ時に `sops exec-env` で一時的に環境変数へ展開し、gomplate がテンプレートを展開したらその後は消える。
 
 2. **サービスは自己完結する**  
-   各サービスは `services/<name>/` 以下に必要なものをすべて持つ。Justfile、secrets.yaml、quadlet ファイル、README.md がそろえば独立して運用できる。
+   各サービスは `services/<name>/` 以下に必要なものをすべて持つ。justfile、secrets.yaml、quadlet ファイル、README.md がそろえば独立して運用できる。
 
 3. **環境は Nix で再現可能にする**  
    ツールチェイン（SOPS, gomplate, just 等）はすべて `flake.nix` でバージョン固定する。ホストへの暗黙的な依存は持たない。
@@ -34,5 +34,5 @@
 
 | ガイド                                                   | 概要                                                               |
 | -------------------------------------------------------- | ------------------------------------------------------------------ |
-| [サービス追加チェックリスト](docs/guides/add-service.md) | 新サービス追加時のディレクトリ構造・Justfile・ドキュメント更新手順 |
+| [サービス追加チェックリスト](docs/guides/add-service.md) | 新サービス追加時のディレクトリ構造・justfile・ドキュメント更新手順 |
 | [デプロイフロー](docs/guides/deploy-flow.md)             | `just <service> deploy` の内部処理ステップ                         |

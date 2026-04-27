@@ -1,4 +1,4 @@
-default:
+_default:
     @just --list
 
 set dotenv-load := false
@@ -21,51 +21,52 @@ deploy:
       exit 1
     fi
     mkdir -p {{ quadlet_dir }}
-    echo "==> Generating quadlet files from templates"
+    echo "==> Generating config and quadlet files from templates"
     sops exec-env {{ secrets }} ' \
-      gomplate -f quadlet/vaultwarden-ts.container.tmpl  -o {{ quadlet_dir }}/vaultwarden-ts.container && \
-      gomplate -f quadlet/vaultwarden.container.tmpl      -o {{ quadlet_dir }}/vaultwarden.container && \
-      gomplate -f quadlet/vaultwarden-ts-serve.json.tmpl  -o {{ quadlet_dir }}/vaultwarden-ts-serve.json \
+      gomplate -f config.yaml.tmpl                    -o {{ quadlet_dir }}/gatus-config.yaml && \
+      gomplate -f quadlet/gatus-ts.container.tmpl     -o {{ quadlet_dir }}/gatus-ts.container && \
+      gomplate -f quadlet/gatus-ts-serve.json.tmpl    -o {{ quadlet_dir }}/gatus-ts-serve.json \
     '
     echo "==> Copying quadlet files"
-    cp quadlet/vaultwarden-data.volume {{ quadlet_dir }}/
-    cp quadlet/vaultwarden-ts-state.volume {{ quadlet_dir }}/
+    cp quadlet/gatus.container {{ quadlet_dir }}/
+    cp quadlet/gatus-data.volume {{ quadlet_dir }}/
+    cp quadlet/gatus-ts-state.volume {{ quadlet_dir }}/
     systemctl --user daemon-reload
-    echo "==> Deployed (domain: vaultwarden.${TS_DOMAIN})"
+    echo "==> Deployed (domain: gatus.${TS_DOMAIN})"
 
 # Start ts sidecar then app
 [group('lifecycle')]
 start:
-    systemctl --user start vaultwarden-ts vaultwarden
+    systemctl --user start gatus-ts gatus
 
 # Stop app then ts sidecar (reverse order)
 [group('lifecycle')]
 stop:
-    systemctl --user stop vaultwarden vaultwarden-ts
+    systemctl --user stop gatus gatus-ts
 
 # Restart app and ts sidecar
 [group('lifecycle')]
 restart:
-    systemctl --user restart vaultwarden-ts vaultwarden
+    systemctl --user restart gatus-ts gatus
 
 ####################
 # Observe
 ####################
 
-# systemctl --user status vaultwarden vaultwarden-ts --no-pager
+# systemctl --user status gatus gatus-ts --no-pager
 [group('observe')]
 status:
-    -systemctl --user status vaultwarden vaultwarden-ts --no-pager
+    -systemctl --user status gatus gatus-ts --no-pager
 
-# journalctl --user -u vaultwarden -u vaultwarden-ts --no-pager -n <count>
+# journalctl --user -u gatus -u gatus-ts --no-pager -n <count>
 [group('observe')]
 logs count="50":
-    journalctl --user -u vaultwarden -u vaultwarden-ts --no-pager -n {{ count }}
+    journalctl --user -u gatus -u gatus-ts --no-pager -n {{ count }}
 
-# journalctl --user -u vaultwarden -u vaultwarden-ts -f
+# journalctl --user -u gatus -u gatus-ts -f
 [group('observe')]
 logs-follow:
-    journalctl --user -u vaultwarden -u vaultwarden-ts -f
+    journalctl --user -u gatus -u gatus-ts -f
 
 ####################
 # Maintenance
