@@ -6,7 +6,7 @@ Gatus ヘルスチェックダッシュボードを Podman Quadlet で運用。T
 
 | ファイル                           | 役割                                                                    |
 | ---------------------------------- | ----------------------------------------------------------------------- |
-| `Justfile`                         | 操作コマンド定義                                                        |
+| `justfile`                         | 操作コマンド定義                                                        |
 | `secrets.yaml`                     | Telegram Bot Token / Chat ID / Tailscale authkey（sops + age で暗号化） |
 | `config.yaml.tmpl`                 | Gatus 設定テンプレート（gomplate で展開）                               |
 | `quadlet/gatus.container`          | Gatus コンテナ定義                                                      |

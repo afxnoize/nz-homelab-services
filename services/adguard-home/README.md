@@ -88,7 +88,7 @@ just adguard-home update            # イメージ更新
 
 ```
 services/adguard-home/
-├── Justfile
+├── justfile
 ├── AdGuardHome.yaml                      # AdGuard Home 設定（リポジトリ管理）
 ├── secrets.yaml                          # SOPS 暗号化済み（ts_authkey）
 ├── README.md

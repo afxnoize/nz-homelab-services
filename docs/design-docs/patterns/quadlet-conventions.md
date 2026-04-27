@@ -7,7 +7,7 @@
 | モード | ホスト                          | 記述方法                              | デプロイ経路                                                            | 動作レベル |
 | ------ | ------------------------------- | ------------------------------------- | ----------------------------------------------------------------------- | ---------- |
 | Nix    | NixOS ホスト (OCI)              | `virtualisation.quadlet.containers.*` | `nixos-rebuild` 経由で `/etc/containers/systemd/` に配置                | rootful    |
-| 手書き | 非 NixOS ホスト (WSL2 / ollama) | `.container` / `.container.tmpl`      | Justfile の `cp` + `gomplate` で `~/.config/containers/systemd/` に配置 | rootless   |
+| 手書き | 非 NixOS ホスト (WSL2 / ollama) | `.container` / `.container.tmpl`      | justfile の `cp` + `gomplate` で `~/.config/containers/systemd/` に配置 | rootless   |
 
 判断基準: **ホストが NixOS なら Nix モード**、それ以外は手書きモード。WSL2 の ollama は Phase 2 で再評価予定（ADR-009 参照）。
 
