@@ -4,10 +4,11 @@ Tailnet 内の DNS サーバー。AdGuard Home + Tailscale Sidecar パターン�
 
 ## 構成
 
-| コンポーネント    | 役割                                                   |
-| ----------------- | ------------------------------------------------------ |
-| `adguard-home`    | AdGuard Home 本体（DNS + Web UI）                      |
-| `adguard-home-ts` | Tailscale サイドカー（Web UI を Tailscale Serve 公開） |
+| コンポーネント     | 役割                                                             |
+| ------------------ | ---------------------------------------------------------------- |
+| `adguard-home`     | AdGuard Home 本体（DNS + Web UI）                                |
+| `adguard-home-ts`  | Tailscale サイドカー（Web UI を Tailscale Serve 公開）           |
+| `adguard-exporter` | API 経由で AdGuard Home の Prometheus メトリクスを公開 (`:9617`) |
 
 ### ネットワーク設計
 
@@ -17,6 +18,9 @@ DNS（UDP/TCP 53）は Tailscale Serve（HTTP プロキシ）を通せないた�
 Tailnet クライアント
   ├── :53  (UDP/TCP) → adguard-home-ts コンテナ IP → AdGuard Home DNS
   └── :443 (HTTPS)  → Tailscale Serve → AdGuard Home Web UI (:3000)
+
+Alloy (host network)
+  └── :9617 (HTTP)  → publishPorts (adguard-home-ts) → adguard-exporter → AdGuard API (:3000)
 ```
 
 `TS_EXTRA_ARGS=--accept-dns=false` で自己参照ループを防いでいる。
@@ -36,6 +40,31 @@ VictoriaLogs 上では `service` ラベルでフィルタする。journald 経�
 | -------------------- | ---------------------- | ---------------------- |
 | アプリケーションログ | `adguard-home.service` | journald 由来          |
 | クエリログ           | `adguard-home`         | Alloy file source 由来 |
+
+### メトリクス設計
+
+`ebrianne/adguard-exporter` が AdGuard API (`http://127.0.0.1:3000`) を 30 秒間隔でポーリングし、Prometheus メトリクスを `:9617/metrics` で公開する。`adguard-home-ts` の `publishPorts` が `127.0.0.1:9617:9617` でホストに公開するため、`network_mode=host` で動作する Alloy から直接 scrape できる。
+
+Alloy の scrape ジョブ名: `adguard`
+
+公開メトリクス（主要なもの）:
+
+| メトリクス名                        | 説明                           |
+| ----------------------------------- | ------------------------------ |
+| `adguard_num_dns_queries`           | DNS クエリ総数                 |
+| `adguard_num_blocked_filtering`     | フィルタリングによるブロック数 |
+| `adguard_avg_processing_time`       | DNS クエリ平均処理時間 (s)     |
+| `adguard_query_types`               | DNS クエリタイプ別件数         |
+| `adguard_top_queried_domains`       | クエリ上位ドメイン             |
+| `adguard_top_blocked_domains`       | ブロック上位ドメイン           |
+| `adguard_top_clients`               | クエリ上位クライアント         |
+| `adguard_num_replaced_safebrowsing` | セーフブラウジングブロック数   |
+| `adguard_num_replaced_parental`     | ペアレンタルブロック数         |
+| `adguard_num_replaced_safesearch`   | セーフサーチブロック数         |
+| `adguard_running`                   | AdGuard 稼働状態               |
+| `adguard_protection_enabled`        | 保護機能有効状態               |
+
+K-012: AdGuard Home は `users: []` 運用のため認証情報は不要。`ADGUARD_USERNAME` / `ADGUARD_PASSWORD` は空で動作する。
 
 ## セットアップ
 
