@@ -94,5 +94,3 @@ services/adguard-home/
     ├── adguard-home-data.volume          # AdGuard Home データ永続化
     └── adguard-home-ts-state.volume      # Tailscale 状態永続化
 ```
-
-> **Note:** `quadlet/adguard-home-querylog*.{container,volume}` および `fluent-bit/*.conf` がディスク上に残っている場合、それらは OCI NixOS 経路以前のローカル podman デプロイ (`just adguard-home deploy`) 用の残骸であり、本 README のファイル構成には載せていない。別途クリーンアップ予定。
