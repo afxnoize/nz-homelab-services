@@ -53,6 +53,7 @@ in
     TS_AUTHKEY=${config.sops.placeholder."gatus/ts_authkey"}
   '';
   sops.templates."gatus-config.yaml".content = builtins.toJSON {
+    metrics = true;
     storage = {
       type = "sqlite";
       path = "/data/gatus.db";
@@ -117,6 +118,9 @@ in
         healthRetries = 3;
         healthStartPeriod = "60s";
         logDriver = "journald";
+        publishPorts = [
+          "127.0.0.1:8180:8080" # gatus metrics -> host localhost (M2)
+        ];
       };
       serviceConfig.Restart = "always";
     };

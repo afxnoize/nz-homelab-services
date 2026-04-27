@@ -57,6 +57,12 @@ just gatus start
 | `just gatus logs-follow` | ログをリアルタイム追従                          |
 | `just gatus update`      | コンテナイメージ更新                            |
 
+## メトリクス
+
+gatus は `/metrics` エンドポイントで Prometheus 形式のメトリクスを公開する (`metrics: true`)。
+TS サイドカー (`gatus-ts`) の `publishPorts` でホスト `127.0.0.1:8180` に bind し、Alloy が
+そこから scrape する (job: `gatus`)。
+
 ## アーキテクチャ
 
 ```
