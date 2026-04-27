@@ -119,7 +119,7 @@ in
         healthStartPeriod = "60s";
         logDriver = "journald";
         publishPorts = [
-          "127.0.0.1:8180:8080" # gatus metrics -> host localhost (M2)
+          "127.0.0.1:8180:8080" # gatus metrics → host localhost
         ];
       };
       serviceConfig.Restart = "always";
