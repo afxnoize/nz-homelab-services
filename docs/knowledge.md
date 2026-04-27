@@ -151,7 +151,7 @@
 - **Trigger**: NixOS ホスト上のコンテナサービスを `virtualisation.oci-containers` から `virtualisation.quadlet`（quadlet-nix）に移行したとき
 - **Problem**: `virtualisation.oci-containers.containers.<name>` は systemd unit を `podman-<name>.service` として生成するが、Quadlet は `.container` ファイル名から `<name>.service` を生成する（プレフィックスなし）。移行直後は新旧どちらの unit 名も参照できる状態にならず、旧名を前提にした journalctl / systemctl コマンドやラベル定義が無言で空の結果を返す。deploy 直後に「ログが止まった」「監視が外れた」ように見えるが、実体は新 unit が走っているだけ。
 - **Solution**:
-  - Justfile の `oci-logs` / `oci-status` など、unit 名に `podman-` プレフィックスを決め打ちしている箇所を `<name>.service` に書き換える
+  - justfile の `oci-logs` / `oci-status` など、unit 名に `podman-` プレフィックスを決め打ちしている箇所を `<name>.service` に書き換える
   - sops-nix の `restartUnits = [ "podman-<name>.service" ]` を `[ "<name>.service" ]` に更新する（ADR-009 移行時にサービスごとに行う）
   - ログ・監視系の運用ツール（Alloy の `loki.source.journal` relabel など）も同タイミングで調整する
   - 混在期間中は `journalctl -u <name>.service -u podman-<name>.service ...` の両方指定で凌ぐこともできるが、順次移行していく前提ならシンプルに新名へ一括更新する方が保守しやすい

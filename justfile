@@ -1,4 +1,4 @@
-default:
+_default:
     @just --list
 
 mod backup 'services/backup-kopia-b2'

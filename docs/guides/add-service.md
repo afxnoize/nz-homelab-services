@@ -6,7 +6,7 @@
 
 ```
 services/<name>/
-├── Justfile
+├── justfile
 ├── secrets.yaml              # SOPS で暗号化して Git 管理
 ├── README.md
 └── quadlet/
@@ -18,7 +18,7 @@ services/<name>/
         └── <name>-ts-state.volume
 ```
 
-## Justfile 標準レシピ
+## justfile 標準レシピ
 
 以下のレシピをすべて実装する。
 
@@ -33,7 +33,7 @@ services/<name>/
 | `logs-follow` | `journalctl --user -u <name> -f`                          |
 | `update`      | `podman auto-update`                                      |
 
-## Root Justfile への登録
+## Root justfile への登録
 
 ```just
 mod <name> 'services/<name>'

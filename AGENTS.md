@@ -21,7 +21,7 @@
 | ------------------ | -------------- | ---------------------------- |
 | 環境管理           | Nix Flakes     | `nix develop`                |
 | タスクランナー     | just           | `just <recipe>`              |
-| バックアップ       | Kopia          | `kopia` (via Justfile)       |
+| バックアップ       | Kopia          | `kopia` (via justfile)       |
 | コンテナ           | Podman Quadlet | `systemctl --user`           |
 | シークレット暗号化 | SOPS + age     | `sops --encrypt / --decrypt` |
 | テンプレート展開   | gomplate       | `gomplate -f in.tmpl -o out` |
@@ -55,7 +55,7 @@ just oci-ssh                  # OCI SSH 接続
 
 ## 機能概要
 
-ホストサービスの管理モノレポ。各サービスは `services/` 以下に独立したディレクトリを持ち、Justfile で操作を定義する。
+ホストサービスの管理モノレポ。各サービスは `services/` 以下に独立したディレクトリを持ち、justfile で操作を定義する。
 
 - [services/backup-kopia-b2/README.md](services/backup-kopia-b2/README.md) — Kopia + B2 定期バックアップ
 - [services/vaultwarden/README.md](services/vaultwarden/README.md) — Vaultwarden + Tailscale Serve
@@ -86,7 +86,7 @@ just oci-ssh                  # OCI SSH 接続
 ## リポジトリ構成
 
 ```
-Justfile                              # ルート: mod でサービスを束ねる
+justfile                              # ルート: mod でサービスを束ねる
 flake.nix                             # 全サービス共通の devShell
 ARCHITECTURE.md                       # 設計思想 + パターン/ガイド目次
 docs/
