@@ -19,10 +19,10 @@ loki.relabel "journal" {
 }
 
 // --- AdGuard querylog (M4 activation) ---
-// loki.source.file "adguard_querylog" {
-//   targets    = [{ __path__ = "/var/log/adguard/querylog.json", service = "adguard-home" }]
-//   forward_to = [loki.write.vl.receiver]
-// }
+loki.source.file "adguard_querylog" {
+  targets    = [{ __path__ = "/var/log/adguard/querylog.json", service = "adguard-home", host = "oci-nix" }]
+  forward_to = [loki.write.vl.receiver]
+}
 
 // --- metrics: host node (built-in unix exporter) ---
 prometheus.exporter.unix "host" { }
