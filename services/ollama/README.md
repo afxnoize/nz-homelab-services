@@ -14,7 +14,7 @@ Ollama (LLM 推論サーバー) + Open WebUI を Podman Quadlet で運用。Tail
 
 | ファイル                             | 役割                                     |
 | ------------------------------------ | ---------------------------------------- |
-| `Justfile`                           | 操作コマンド定義                         |
+| `justfile`                           | 操作コマンド定義                         |
 | `secrets.yaml`                       | Tailscale authkey（sops + age で暗号化） |
 | `quadlet/ollama.container`           | Ollama コンテナ (GPU)                    |
 | `quadlet/open-webui.container`       | Open WebUI コンテナ                      |

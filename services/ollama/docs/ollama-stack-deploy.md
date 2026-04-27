@@ -77,7 +77,7 @@ podman exec ollama nvidia-smi
 
 ## deploy-all との関係
 
-このサービスは **別マシン (WSL2)** で動作するため、ルート Justfile の `deploy-all` には含めない。
+このサービスは **別マシン (WSL2)** で動作するため、ルート justfile の `deploy-all` には含めない。
 `mod ollama 'services/ollama'` で登録し、`just ollama deploy` で個別操作のみ可能にする。
 
 > deploy-all のホスト分離については別途検討予定。

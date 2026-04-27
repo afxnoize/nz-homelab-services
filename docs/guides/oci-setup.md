@@ -213,11 +213,11 @@ just oci-logs <service>   # e.g. just oci-logs adguard-home
 
 ### nixos-rebuild はローカルにない
 
-ローカルマシンは NixOS ではないため `nixos-rebuild` コマンドがない。Justfile では `nix run nixpkgs#nixos-rebuild --` で代用している。
+ローカルマシンは NixOS ではないため `nixos-rebuild` コマンドがない。justfile では `nix run nixpkgs#nixos-rebuild --` で代用している。
 
 ### sops の復号は just 起動時に走る
 
-`oci_host` 変数は Justfile のトップレベルで定義されているため、OCI レシピを使わないときも `sops -d` が実行される。`nix develop` の外で `just --list` を叩くとエラーになる場合がある。
+`oci_host` 変数は justfile のトップレベルで定義されているため、OCI レシピを使わないときも `sops -d` が実行される。`nix develop` の外で `just --list` を叩くとエラーになる場合がある。
 
 ### Tailscale Serve の `:443` キー
 
