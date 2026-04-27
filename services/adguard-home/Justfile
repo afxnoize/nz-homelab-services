@@ -30,8 +30,6 @@ deploy:
     echo "==> Copying quadlet files"
     cp quadlet/adguard-home-data.volume              {{ quadlet_dir }}/
     cp quadlet/adguard-home-ts-state.volume          {{ quadlet_dir }}/
-    cp quadlet/adguard-home-querylog.container        {{ quadlet_dir }}/
-    cp quadlet/adguard-home-querylog-state.volume     {{ quadlet_dir }}/
     mkdir -p {{ quadlet_dir }}/adguard-home-conf
     echo "==> Syncing AdGuardHome.yaml (preserving users + persistent clients)"
     CONF="{{ quadlet_dir }}/adguard-home-conf/AdGuardHome.yaml"
@@ -40,37 +38,33 @@ deploy:
     else
       cp AdGuardHome.yaml "$CONF"
     fi
-    echo "==> Copying fluent-bit config"
-    mkdir -p {{ quadlet_dir }}/adguard-home-fluent-bit
-    cp fluent-bit/fluent-bit.conf {{ quadlet_dir }}/adguard-home-fluent-bit/
-    cp fluent-bit/parsers.conf    {{ quadlet_dir }}/adguard-home-fluent-bit/
     systemctl --user daemon-reload
     echo "==> Deployed (Web UI: https://adguard-home.${TS_DOMAIN})"
     echo "==> DNS: bind address を 0.0.0.0:53, Web UI を 0.0.0.0:3000 に設定してください"
 
-# Start ts sidecar, app, then querylog sidecar
+# Start ts sidecar, then app
 [group('lifecycle')]
 start:
-    systemctl --user start adguard-home-ts adguard-home adguard-home-querylog
+    systemctl --user start adguard-home-ts adguard-home
 
-# Stop querylog, app, then ts sidecar (reverse order)
+# Stop app, then ts sidecar (reverse order)
 [group('lifecycle')]
 stop:
-    systemctl --user stop adguard-home-querylog adguard-home adguard-home-ts
+    systemctl --user stop adguard-home adguard-home-ts
 
 # Restart all related units
 [group('lifecycle')]
 restart:
-    systemctl --user restart adguard-home-ts adguard-home adguard-home-querylog
+    systemctl --user restart adguard-home-ts adguard-home
 
 ####################
 # Observe
 ####################
 
-# systemctl --user status adguard-home adguard-home-ts adguard-home-querylog --no-pager
+# systemctl --user status adguard-home adguard-home-ts --no-pager
 [group('observe')]
 status:
-    -systemctl --user status adguard-home adguard-home-ts adguard-home-querylog --no-pager
+    -systemctl --user status adguard-home adguard-home-ts --no-pager
 
 # journalctl --user -u adguard-home -u adguard-home-ts --no-pager -n <count>
 [group('observe')]
@@ -81,16 +75,6 @@ logs count="50":
 [group('observe')]
 logs-follow:
     journalctl --user -u adguard-home -u adguard-home-ts -f
-
-# journalctl --user -u adguard-home-querylog SYSLOG_IDENTIFIER=systemd-adguard-home-querylog -o cat --no-pager -n <count> | grep '^{'
-[group('observe')]
-logs-querylog count="50":
-    journalctl --user -u adguard-home-querylog SYSLOG_IDENTIFIER=systemd-adguard-home-querylog -o cat --no-pager -n {{ count }} | grep '^{'
-
-# journalctl --user -u adguard-home-querylog SYSLOG_IDENTIFIER=systemd-adguard-home-querylog -o cat -f | grep --line-buffered '^{'
-[group('observe')]
-logs-querylog-follow:
-    journalctl --user -u adguard-home-querylog SYSLOG_IDENTIFIER=systemd-adguard-home-querylog -o cat -f | grep --line-buffered '^{'
 
 ####################
 # Maintenance
