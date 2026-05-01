@@ -127,7 +127,7 @@
       "gridPos": { "h": 6, "w": 6, "x": 0, "y": 14 },
       "datasource": { "type": "prometheus", "uid": "victoriametrics" },
       "fieldConfig": {
-        "defaults": { "unit": "s" },
+        "defaults": { "unit": "dtdurations" },
         "overrides": []
       },
       "targets": [
