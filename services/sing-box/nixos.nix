@@ -19,7 +19,10 @@ let
         servers = [
           {
             tag = "adguard";
-            address = adguardDnsHost;
+            # sing-box 1.12.0+ new DNS server format (legacy address field removed in 1.14.0)
+            # https://sing-box.sagernet.org/migration/#migrate-to-new-dns-server-formats
+            type = "udp";
+            server = adguardDnsHost;
           }
         ];
         final = "adguard";
