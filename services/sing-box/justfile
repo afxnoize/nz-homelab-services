@@ -1,0 +1,35 @@
+_default:
+    @just --list
+
+set dotenv-load := false
+
+# NOTE: sing-box is managed by NixOS (rootful Podman Quadlet).
+# Deployment is done via `just oci-deploy` at the repo root.
+
+####################
+# Observe
+####################
+
+# Show service status (run on OCI host via just oci-ssh)
+[group('observe')]
+status:
+    -systemctl status sing-box-ts sing-box --no-pager
+
+# Show recent logs
+[group('observe')]
+logs count="50":
+    journalctl -u sing-box-ts -u sing-box --no-pager -n {{ count }}
+
+# Follow logs
+[group('observe')]
+logs-follow:
+    journalctl -u sing-box-ts -u sing-box -f
+
+####################
+# Maintenance
+####################
+
+# Update container images (run on OCI host)
+[group('maintenance')]
+update:
+    podman auto-update

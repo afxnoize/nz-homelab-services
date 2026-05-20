@@ -62,6 +62,7 @@ just oci-ssh                  # OCI SSH 接続
 - [services/gatus/README.md](services/gatus/README.md) — Gatus ヘルスチェック + Telegram 通知
 - [services/adguard-home/README.md](services/adguard-home/README.md) — AdGuard Home DNS + Tailscale Serve
 - [services/ollama/README.md](services/ollama/README.md) — Ollama + Open WebUI + Tailscale Serve (WSL2 / GPU)
+- [services/sing-box/README.md](services/sing-box/README.md) — sing-box 選択的 forward proxy (SOCKS5/HTTP、Tailscale 経由)
 
 ## 技術スタック
 
@@ -74,6 +75,7 @@ just oci-ssh                  # OCI SSH 接続
 | 観測スタック   | Alloy + VictoriaLogs + VictoriaMetrics + Grafana (Phase 2 / 計画中) |
 | アラート       | Gatus (外形) + vmalert (メトリクス) → Telegram (Phase 2)            |
 | DNS フィルタ   | AdGuard Home + Tailscale Serve                                      |
+| Forward Proxy  | sing-box + Tailscale Sidecar (OCI、SOCKS5/HTTP CONNECT)             |
 | LLM 推論       | Ollama + Open WebUI + Tailscale Serve (WSL2 / NVIDIA GPU)           |
 | シークレット   | SOPS (age 暗号化) → Git 管理                                        |
 | スケジュール   | systemd user timer (daily)                                          |
@@ -117,7 +119,8 @@ services/
 ├── vaultwarden/                      # → README.md 参照
 ├── gatus/                            # → README.md 参照
 ├── adguard-home/                     # → README.md 参照
-└── ollama/                           # → README.md 参照 (WSL2 マシン)
+├── ollama/                           # → README.md 参照 (WSL2 マシン)
+└── sing-box/                         # → README.md 参照 (Tailscale 内 forward proxy)
 ```
 
 ## 設計判断
