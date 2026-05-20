@@ -9,6 +9,7 @@ in
     ../../services/adguard-home/nixos.nix
     ../../services/vaultwarden/nixos.nix
     ../../services/gatus/nixos.nix
+    ../../services/sing-box/nixos.nix
   ];
 
   # Boot (OCI ARM — UEFI + iSCSI boot volume)
