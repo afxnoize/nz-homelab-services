@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  lib,
   ...
 }:
 let
@@ -25,6 +24,8 @@ let
         ];
         final = "adguard";
       };
+      # listen=0.0.0.0 でも netns を sing-box-ts と共有しているため
+      # 実際の到達経路は Tailscale tailscale0 IF のみ (host network には露出しない)
       inbounds = [
         {
           type = "socks";
@@ -74,6 +75,9 @@ in
           TS_HOSTNAME = "sing-box";
           TS_STATE_DIR = "/var/lib/tailscale";
           TS_USERSPACE = "true";
+          # TS_EXTRA_ARGS の --accept-dns=false は不要:
+          # sing-box が自身で AdGuard を直接 DNS upstream として呼び出すため、
+          # Tailscale sidecar の DNS 設定と sing-box の DNS 解決は干渉しない
         };
         environmentFiles = [
           config.sops.templates."sing-box-ts.env".path
