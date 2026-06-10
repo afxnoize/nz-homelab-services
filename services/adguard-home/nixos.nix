@@ -64,6 +64,9 @@ in
         healthRetries = 3;
         healthStartPeriod = "60s";
         logDriver = "journald";
+        publishPorts = [
+          "127.0.0.1:9617:9617" # adguard-exporter metrics → host localhost
+        ];
       };
       serviceConfig.Restart = "always";
     };
@@ -98,6 +101,30 @@ in
           "${pkgs.coreutils}/bin/install -m 644 ${adguardConfig} /var/lib/containers/storage/volumes/adguard-home-conf/_data/AdGuardHome.yaml"
         ];
       };
+    };
+
+    # AdGuard exporter (Prometheus metrics via API)
+    adguard-exporter = {
+      autoStart = true;
+      containerConfig = {
+        image = "docker.io/ebrianne/adguard-exporter:latest";
+        networks = [ "container:adguard-home-ts" ];
+        environments = {
+          ADGUARD_PROTOCOL = "http";
+          ADGUARD_HOSTNAME = "127.0.0.1";
+          ADGUARD_PORT = "3000";
+          ADGUARD_USERNAME = "";
+          ADGUARD_PASSWORD = "";
+          SERVER_PORT = "9617";
+          INTERVAL = "30s";
+        };
+        logDriver = "journald";
+      };
+      unitConfig = {
+        Requires = [ "adguard-home.service" ];
+        After = [ "adguard-home.service" ];
+      };
+      serviceConfig.Restart = "always";
     };
   };
 }

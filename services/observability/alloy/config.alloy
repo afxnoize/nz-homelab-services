@@ -39,6 +39,22 @@ prometheus.scrape "alloy" {
   forward_to = [prometheus.remote_write.vm.receiver]
 }
 
+// --- metrics: gatus ---
+prometheus.scrape "gatus" {
+  targets    = [{ __address__ = "127.0.0.1:8180" }]
+  forward_to = [prometheus.remote_write.vm.receiver]
+  job_name   = "gatus"
+  metrics_path = "/metrics"
+}
+
+// --- metrics: adguard-home ---
+prometheus.scrape "adguard" {
+  targets    = [{ __address__ = "127.0.0.1:9617" }]
+  forward_to = [prometheus.remote_write.vm.receiver]
+  job_name   = "adguard"
+  metrics_path = "/metrics"
+}
+
 // --- writes ---
 loki.write "vl" {
   endpoint { url = "http://127.0.0.1:9428/insert/loki/api/v1/push" }
