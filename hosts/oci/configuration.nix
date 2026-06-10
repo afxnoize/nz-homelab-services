@@ -10,6 +10,7 @@ in
     ../../services/vaultwarden/nixos.nix
     ../../services/gatus/nixos.nix
     ../../services/observability # default.nix を暗黙 import
+    ../../services/sing-box/nixos.nix
   ];
 
   # Boot (OCI ARM — UEFI + iSCSI boot volume)
