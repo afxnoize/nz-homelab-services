@@ -23,37 +23,6 @@ let
       };
     }
   );
-
-  fluentBitConf = pkgs.writeText "adguard-home-fluent-bit.conf" ''
-    [SERVICE]
-        Flush        5
-        Log_Level    warn
-        Daemon       off
-        Parsers_File /fluent-bit/etc/parsers.conf
-
-    [INPUT]
-        Name         tail
-        Path         /data/querylog.json
-        Tag          adguard.querylog
-        Parser       json
-        DB           /state/tail-pos.db
-        Refresh_Interval 10
-        Read_from_Head false
-
-    [OUTPUT]
-        Name         stdout
-        Match        *
-        Format       json_lines
-  '';
-
-  parsersConf = pkgs.writeText "adguard-home-parsers.conf" ''
-    [PARSER]
-        Name         json
-        Format       json
-        Time_Key     T
-        Time_Format  %Y-%m-%dT%H:%M:%S.%L%z
-        Time_Keep    On
-  '';
   adguardConfig = ./AdGuardHome.yaml;
 in
 {
@@ -95,6 +64,9 @@ in
         healthRetries = 3;
         healthStartPeriod = "60s";
         logDriver = "journald";
+        publishPorts = [
+          "127.0.0.1:9617:9617" # adguard-exporter metrics → host localhost
+        ];
       };
       serviceConfig.Restart = "always";
     };
@@ -131,22 +103,21 @@ in
       };
     };
 
-    # Fluent-bit querylog sidecar
-    adguard-home-querylog = {
+    # AdGuard exporter (Prometheus metrics via API)
+    adguard-exporter = {
       autoStart = true;
       containerConfig = {
-        image = "ghcr.io/fluent/fluent-bit:latest";
-        volumes = [
-          "adguard-home-data:/data:ro"
-          "adguard-home-querylog-state:/state"
-          "${fluentBitConf}:/fluent-bit/etc/fluent-bit.conf:ro"
-          "${parsersConf}:/fluent-bit/etc/parsers.conf:ro"
-        ];
-        exec = [
-          "/fluent-bit/bin/fluent-bit"
-          "-c"
-          "/fluent-bit/etc/fluent-bit.conf"
-        ];
+        image = "docker.io/ebrianne/adguard-exporter:latest";
+        networks = [ "container:adguard-home-ts" ];
+        environments = {
+          ADGUARD_PROTOCOL = "http";
+          ADGUARD_HOSTNAME = "127.0.0.1";
+          ADGUARD_PORT = "3000";
+          ADGUARD_USERNAME = "";
+          ADGUARD_PASSWORD = "";
+          SERVER_PORT = "9617";
+          INTERVAL = "30s";
+        };
         logDriver = "journald";
       };
       unitConfig = {

@@ -66,6 +66,7 @@
 - 単一バイナリで Quadlet / NixOS モジュールが単純
 - PromQL 資産 (ダッシュボード, exporter) はそのまま流用できる
 - [ADR-010](010-alert-routing.md) で採用する vmalert とネイティブ統合
+- M1 spec (2026-04-16) で retention / ディスク予算を確定: VictoriaMetrics 90d / 10 GB、VictoriaLogs 30d / 15 GB
 
 ### 悪い面
 
@@ -76,7 +77,7 @@
 
 ### 波及する未決事項
 
-- retention / ディスク予算 (OCI 200 GB ブートボリューム内の配分) は実装時に決定
+- retention / ディスク予算 (OCI 100 GB ブートボリューム内の配分) は実装時に決定
 - backup 戦略 (vmbackup を使うか、ディスクレベルスナップショットで済ますか)
 - WSL2 からの remote_write 認証 (Tailscale ACL のみで閉じる / 追加 token)
 - AGENTS.md 技術スタック表への追記は spec コミットで実施
