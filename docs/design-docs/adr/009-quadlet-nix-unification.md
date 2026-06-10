@@ -1,6 +1,6 @@
 # ADR-009: quadlet-nix によるコンテナ定義の統一
 
-- **Status**: proposed
+- **Status**: accepted
 - **Date**: 2026-04-15
 
 ## Context

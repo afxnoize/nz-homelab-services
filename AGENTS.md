@@ -36,7 +36,7 @@
 
 ```bash
 just                          # レシピ一覧
-just deploy-all               # 全サービス deploy
+just deploy-all               # ホスト常駐サービス deploy (OCI 管理は除く)
 just backup <recipe>          # kopia 操作
 just vaultwarden <recipe>     # vaultwarden 操作
 just gatus <recipe>           # gatus 操作
@@ -98,7 +98,11 @@ docs/
 ├── knowledge.md                      # 既知の落とし穴
 ├── guides/                           # 手順書
 │   ├── add-service.md                # サービス追加チェックリスト
-│   └── deploy-flow.md                # デプロイフロー
+│   ├── deploy-flow.md                # デプロイフロー
+│   ├── oci-setup.md                  # OCI NixOS デプロイ手順
+│   └── sing-box-client-setup.md      # sing-box クライアント設定
+├── references/                       # 外部ツールリファレンス
+│   └── oci-cli.md                    # OCI CLI コマンド集
 └── design-docs/
     ├── index.md                      # 設計文書カタログ
     ├── adr/
@@ -113,6 +117,7 @@ docs/
 hosts/
 └── oci/                              # OCI NixOS ホスト設定
     ├── configuration.nix             # ホスト設定
+    ├── hardware-configuration.nix    # ハードウェア構成 (nixos-generate)
     ├── disko.nix                     # ディスクレイアウト
     ├── vars.nix                      # ホスト変数
     └── secrets.yaml                  # ホスト secrets (sops)
@@ -144,6 +149,7 @@ services/
 | ------------------------ | ----------------------------------------- |
 | サービス追加/変更/削除   | AGENTS.md, docs/design-docs/              |
 | 設計判断                 | docs/design-docs/adr/ に ADR ファイル追加 |
+| ADR の実装完了           | 該当 ADR の Status を accepted に更新     |
 | 依存関係の追加/変更      | AGENTS.md (ツールチェイン表)              |
 | バグ修正（非自明なもの） | 該当サービスの README.md                  |
 | 新しいパターンの適用     | ARCHITECTURE.md                           |

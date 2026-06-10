@@ -22,17 +22,19 @@
 
 ## パターンカタログ
 
-| パターン                                                                 | 概要                                                            |
-| ------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| [Tailscale Sidecar](docs/design-docs/patterns/tailscale-sidecar.md)      | Tailscale sidecar でネットワーク名前空間を共有し Tailnet に公開 |
-| [シークレットパイプライン](docs/design-docs/patterns/secret-pipeline.md) | SOPS + gomplate で秘匿値をテンプレートに注入                    |
-| [ログ戦略](docs/design-docs/patterns/log-strategy.md)                    | journald 集約（Phase 1）と Grafana + Loki 構想（Phase 2）       |
-| [Quadlet 構成規約](docs/design-docs/patterns/quadlet-conventions.md)     | ファイル種別・標準設定・デプロイ先                              |
-| [公開モデル](docs/design-docs/patterns/exposure-models.md)               | Tailscale Serve vs localhost バインドの選択基準                 |
+| パターン                                                                 | 概要                                                                        |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| [Tailscale Sidecar](docs/design-docs/patterns/tailscale-sidecar.md)      | Tailscale sidecar でネットワーク名前空間を共有し Tailnet に公開             |
+| [シークレットパイプライン](docs/design-docs/patterns/secret-pipeline.md) | SOPS + gomplate で秘匿値をテンプレートに注入                                |
+| [ログ戦略](docs/design-docs/patterns/log-strategy.md)                    | journald 集約（Phase 1）と Alloy → VictoriaLogs 集約（Phase 2、OCI 稼働中） |
+| [Quadlet 構成規約](docs/design-docs/patterns/quadlet-conventions.md)     | ファイル種別・標準設定・デプロイ先                                          |
+| [公開モデル](docs/design-docs/patterns/exposure-models.md)               | Tailscale Serve vs localhost バインドの選択基準                             |
 
 ## ガイド
 
-| ガイド                                                   | 概要                                                               |
-| -------------------------------------------------------- | ------------------------------------------------------------------ |
-| [サービス追加チェックリスト](docs/guides/add-service.md) | 新サービス追加時のディレクトリ構造・justfile・ドキュメント更新手順 |
-| [デプロイフロー](docs/guides/deploy-flow.md)             | `just <service> deploy` の内部処理ステップ                         |
+| ガイド                                                            | 概要                                                                |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [サービス追加チェックリスト](docs/guides/add-service.md)          | 新サービス追加時のディレクトリ構造・justfile・ドキュメント更新手順  |
+| [デプロイフロー](docs/guides/deploy-flow.md)                      | `just <service> deploy` の内部処理ステップ（手書き Quadlet モード） |
+| [OCI セットアップ](docs/guides/oci-setup.md)                      | OCI Ampere A1 への NixOS デプロイ手順                               |
+| [sing-box クライアント設定](docs/guides/sing-box-client-setup.md) | 各クライアントから forward proxy を使う設定手順                     |
