@@ -1,6 +1,6 @@
 # デプロイフロー
 
-`just <service> deploy` が実行されたときの内部処理。
+`just <service> deploy` が実行されたときの内部処理（**手書き Quadlet モード**、WSL2 等の非 NixOS ホスト）。OCI NixOS ホストのサービスは `just oci-deploy`（nixos-rebuild switch）でデプロイし、このフローは通らない。手順は [oci-setup.md](oci-setup.md) を参照。
 
 ```
 1. TS_DOMAIN を取得

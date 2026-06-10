@@ -2,6 +2,8 @@
 
 新しいサービスを `services/<name>/` に追加するときの手順。
 
+> このガイドは**手書き Quadlet モード**（WSL2 等の非 NixOS ホスト）が対象。OCI NixOS ホストに載せる場合は `services/<name>/nixos.nix` で `virtualisation.quadlet.containers.*` を定義し、デプロイは `just oci-deploy`（nixos-rebuild）で行う。justfile には deploy 系レシピを置かず観測・メンテ用のみ用意する（observability / sing-box が参考）。詳細は [oci-setup.md](oci-setup.md) と [ADR-009](../design-docs/adr/009-quadlet-nix-unification.md)。
+
 ## ディレクトリ構造
 
 ```

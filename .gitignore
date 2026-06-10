@@ -1,1 +1,13 @@
+# Nix build output
 result
+result-*
+
+# JS toolchain artifacts (not used in this repo; created by tooling templates)
+package.json
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bunfig.toml
+.npmrc
+.yarnrc
+.yarnrc.yml

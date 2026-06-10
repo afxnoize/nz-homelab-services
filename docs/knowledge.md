@@ -24,7 +24,7 @@
 - **Problem**: Podman Quadlet は `.container` ファイル名からユニット名を生成する際に自動で `systemd-` プレフィックスを付ける。そのため `foo-ts.container` → ユニット名は `systemd-foo-ts`。`Network=container:foo-ts` と書くと存在しないネットワークを参照してコンテナが起動しない。
 - **Solution**: `Network=container:systemd-foo-ts` と書く。
 - **Confidence**: high
-- **Source**: ADR-002
+- **Source**: tailscale-sidecar パターン導入時に発見（Podman Quadlet の unit 命名仕様。ADR-002 はテンプレート管理の話で本件とは無関係）
 
 ### K-002: `sops exec-env` 内のシェルクオート
 
@@ -76,7 +76,9 @@
   ```
 - **Confidence**: high
 
-### K-007: fluent-bit tail の位置永続化（adguard-home-querylog）【対処済み】
+### K-007: fluent-bit tail の位置永続化（adguard-home-querylog）【廃止構成】
+
+> ⚠️ fluent-bit サイドカー（ADR-006）は ADR-008（Alloy unified collector）で廃止済み。現行アーキテクチャには存在しない。記録として保持する。
 
 - **Trigger**: `adguard-home-querylog` コンテナ（fluent-bit）が再起動されたとき
 - **Problem**: fluent-bit の tail input に `DB` パラメータを設定していないため、読み取り位置が永続化されない。再起動中に書き込まれたクエリログが欠損する。`Read_from_Head true` にすれば再読み込みされるが、journald に重複エントリが入る。
@@ -84,13 +86,25 @@
 - **Confidence**: high
 - **Source**: fluent-bit sidecar 導入時のレビュー（2026-04-09）、対処（2026-04-13）
 
-### K-008: fluent-bit と AdGuardHome.yaml の querylog パス依存
+### K-008: fluent-bit と AdGuardHome.yaml の querylog パス依存【廃止構成】
+
+> ⚠️ fluent-bit サイドカー（ADR-006）は ADR-008（Alloy unified collector）で廃止済み。現行アーキテクチャには存在しない。記録として保持する。
 
 - **Trigger**: AdGuardHome.yaml の `querylog.dir_path` を変更するとき
 - **Problem**: fluent-bit.conf の `Path /data/querylog.json` は AdGuard Home のデフォルト出力先（`/opt/adguardhome/data/querylog.json`）に依存している。`dir_path` を変更すると fluent-bit がファイルを見つけられなくなり、クエリログが journald に流れなくなる。エラーも出ないため気づきにくい。
 - **Solution**: `dir_path` を変更する場合は fluent-bit.conf の `Path` と adguard-home-querylog.container の `Volume` マウントも合わせて変更する。現状は `dir_path: ""`（デフォルト）に固定する前提で運用する。
 - **Confidence**: high
 - **Source**: fluent-bit sidecar 導入時のレビュー（2026-04-09）
+
+### K-009: fluent-bit の Log_Level を warn にしている理由【廃止構成】
+
+> ⚠️ fluent-bit サイドカー（ADR-006）は ADR-008（Alloy unified collector）で廃止済み。現行アーキテクチャには存在しない。記録として保持する。
+
+- **Trigger**: adguard-home と adguard-home-querylog を同時に起動したとき
+- **Problem**: AdGuard Home は最初の DNS クエリが来るまで `querylog.json` を作成しない場合がある。fluent-bit の tail input は対象ファイルが存在しないときに warn ログを出す。実害はない（ファイル出現後に自動で読み始める）。起動直後に一時的な warn が出るが、DNS が Tailnet 全体で使われているためファイルはほぼ即座に生成される。
+- **Solution**: `Log_Level warn` のまま運用する。error に絞ることも検討したが、query log の異常検知を fluent-bit 側の warn に頼る可能性があるため、情報量を残す判断をした。起動時の一時的な warn は許容する。Log_Level の変更判断は今後の query log 分析結果に基づいて行う。
+- **Confidence**: high
+- **Source**: fluent-bit sidecar 導入時のレビュー + query log 分析（2026-04-09）
 
 ### K-010: AdGuard Home の data ディレクトリは `/opt/adguardhome/work/data/`
 
@@ -102,14 +116,6 @@
   ```
 - **Confidence**: high
 - **Source**: querylog 調査で発見（2026-04-09）。`podman exec ls -la /opt/adguardhome/data/` が空、`/opt/adguardhome/work/data/` にファイルが存在することで確認。
-
-### K-009: fluent-bit の Log_Level を warn にしている理由
-
-- **Trigger**: adguard-home と adguard-home-querylog を同時に起動したとき
-- **Problem**: AdGuard Home は最初の DNS クエリが来るまで `querylog.json` を作成しない場合がある。fluent-bit の tail input は対象ファイルが存在しないときに warn ログを出す。実害はない（ファイル出現後に自動で読み始める）。起動直後に一時的な warn が出るが、DNS が Tailnet 全体で使われているためファイルはほぼ即座に生成される。
-- **Solution**: `Log_Level warn` のまま運用する。error に絞ることも検討したが、query log の異常検知を fluent-bit 側の warn に頼る可能性があるため、情報量を残す判断をした。起動時の一時的な warn は許容する。Log_Level の変更判断は今後の query log 分析結果に基づいて行う。
-- **Confidence**: high
-- **Source**: fluent-bit sidecar 導入時のレビュー + query log 分析（2026-04-09）
 
 ### K-011: Tailscale sidecar の state 永続化には `TS_STATE_DIR` が必須
 
