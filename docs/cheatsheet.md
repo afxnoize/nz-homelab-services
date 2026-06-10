@@ -139,7 +139,7 @@ up{job=~"gatus|adguard"}
 rate(gatus_results_total{success="true"}[5m])
 
 # AdGuard ブロック率
-rate(adguard_blocked_filtering[5m])
+rate(adguard_num_blocked_filtering[5m])
 ```
 
 ### 主要 LogsQL (VictoriaLogs)
@@ -156,7 +156,7 @@ service:adguard-home
 service:gatus.service AND _msg:error
 
 # Error / Warn を大文字小文字問わず検索 — i() フィルタを使う
-service:gatus.service AND i(error)
+service:gatus.service AND (i(error) OR i(warn))
 
 # regexp で case-insensitive 検索 (RE2 構文、(?i) フラグ)
 service:gatus.service AND ~"(?i)(error|warn)"
