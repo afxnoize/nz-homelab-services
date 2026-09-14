@@ -28,11 +28,13 @@ restart:
     ssh root@{{oci_host}} 'systemctl restart victorialogs victoriametrics alloy grafana-ts grafana'
 
 # Quick VL query (recent 5m logs)
+# query is passed via stdin (curl's @-) so quotes survive the ssh hop (K-020)
 [group('debug')]
 vl-query query="_time:5m":
-    ssh root@{{oci_host}} 'curl -sG http://127.0.0.1:9428/select/logsql/query --data-urlencode "query={{query}}" | head -10'
+    printf '%s' {{quote(query)}} | ssh root@{{oci_host}} 'curl -sG http://127.0.0.1:9428/select/logsql/query --data-urlencode query@- | head -10'
 
 # Quick VM query (up metrics)
+# query is passed via stdin (curl's @-) so quotes survive the ssh hop (K-020)
 [group('debug')]
 vm-query query="up":
-    ssh root@{{oci_host}} 'curl -sG http://127.0.0.1:8428/api/v1/query --data-urlencode "query={{query}}" | jq -r ".data.result[]"'
+    printf '%s' {{quote(query)}} | ssh root@{{oci_host}} 'curl -sG http://127.0.0.1:8428/api/v1/query --data-urlencode query@- | jq -r ".data.result[]"'

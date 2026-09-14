@@ -214,3 +214,15 @@
   `rslave` は host 側のマウント変化をコンテナに伝播させるため。
 - **Confidence**: high
 - **Source**: homelab-overview の Host resources パネルで Disk % が no data だった事案（2026-09-14）。`node_filesystem_size_bytes` の mountpoint 一覧にコンテナの bind mount しか無いことを VM 直接クエリで確認。
+
+### K-020: ssh 経由 recipe に PromQL/LogsQL を渡すとダブルクオートが剥がれて「結果が空」に見える
+
+- **Trigger**: `just observability vm-query 'metric{label="value"}'` のように、ssh + curl をラップした recipe へクオート付きクエリを渡したとき
+- **Problem**: recipe 内の `ssh host 'curl ... "query={{query}}"'` では、query 内の `"` がリモートシェルのクオート解釈で消費され、`{label=value}` という不正な PromQL がサーバに届く。エラー JSON は `jq -r ".data.result[]"` に飲まれて出力ゼロになるため、「その metric は存在しない」と誤診する。実際には metric は存在していた。
+- **Solution**: クエリを引数ではなく stdin で渡す。`curl --data-urlencode query@-` は値を stdin から読むので、シェルのクオート解釈を一切通らない。vl-query / vm-query は修正済み。同型の recipe を新設するときも同じパターンを使う。
+  ```just
+  vm-query query="up":
+      printf '%s' {{quote(query)}} | ssh root@{{oci_host}} 'curl -sG http://127.0.0.1:8428/api/v1/query --data-urlencode query@- | jq -r ".data.result[]"'
+  ```
+- **Confidence**: high
+- **Source**: K-019 の調査中、label filter 付きクエリだけが空を返す現象で発見（2026-09-14）。同じクエリを ssh 先で直接実行すると結果が返ることで切り分け。
