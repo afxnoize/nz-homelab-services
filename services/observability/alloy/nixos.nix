@@ -24,6 +24,12 @@ in
         "/etc/machine-id:/etc/machine-id:ro"
         "adguard-home-data:/var/log/adguard:ro"
         "alloy-data:/var/lib/alloy"
+        # Host mounts for prometheus.exporter.unix (see K-019):
+        # without these the exporter sees only the container's overlay fs
+        # and host filesystem metrics (mountpoint="/") are silently missing
+        "/:/rootfs:ro,rslave"
+        "/proc:/host/proc:ro"
+        "/sys:/host/sys:ro"
       ];
       healthCmd = "wget --spider -q http://127.0.0.1:${toString vars.ports.alloy}/-/healthy || exit 1";
       healthInterval = "30s";

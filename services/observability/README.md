@@ -12,6 +12,8 @@ Alloy + VictoriaLogs + VictoriaMetrics + Grafana による観測スタック。O
 | Grafana         | 3000   | container:grafana-ts | UI (Tailscale Serve で HTTPS 公開)                |
 | grafana-ts      | —      | bridge + TS          | Tailscale sidecar                                 |
 
+Alloy はコンテナ内から host metrics を取るため、host の `/` `/proc` `/sys` を read-only mount し、`prometheus.exporter.unix` の `rootfs_path` / `procfs_path` / `sysfs_path` をそこへ向けている。これがないと filesystem metrics が無言で欠落する（[K-019](../../docs/knowledge.md)）。
+
 ## 操作
 
 ```bash

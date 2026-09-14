@@ -192,3 +192,25 @@
 - **Solution**: ローカル残骸の unit を止める（`systemctl --user stop <svc> <svc>-ts`）。競合が消えれば、OCI 側は restart の再登録リトライで数分内に `machineAuthorized=true` に転じて自然復旧する（今回は残骸停止から約 8 分で復旧。復旧の正確な機序は未確認、confidence は下記参照）。恒久対策はローカル残骸の quadlet ファイルごと撤去。sops の `ts_authkey` は失効済みなので、次に本当に再認証が必要になったら admin console で該当 tag 付きの新 key を発行して `sops set` → `just oci-deploy`
 - **Confidence**: medium（競合→logout の因果は状況証拠。復旧が残骸停止によるものか admin console 操作によるものかは切り分けできていない）
 - **Source**: tailscale sidecar 更新作業中に OCI 側 3 ノードが logout した事案（2026-08-21）。journalctl の `machineAuthorized` 遷移と、残骸有無による被害の切り分けで確認。
+
+### K-019: コンテナ内の `prometheus.exporter.unix` は host mount なしだと filesystem metrics が無言で欠落する
+
+- **Trigger**: Alloy（や node_exporter）をコンテナで動かし、host の filesystem metrics を取ろうとしたとき
+- **Problem**: exporter はコンテナ自身の `/proc` からマウント一覧を読むため、見えるのはコンテナの overlay rootfs と少数の bind mount だけ。overlay / tmpfs はデフォルトの `fs_types_exclude` で除外されるので、`node_filesystem_*{mountpoint="/"}` が存在しなくなる。エラーは一切出ず、ダッシュボード側で Disk % が no data になって初めて気づく。CPU / メモリ / ネットワークは procfs が host 全体の値を返すため正常に見え、欠落に気づきにくい。
+- **Solution**: host の `/`・`/proc`・`/sys` を read-only でコンテナにマウントし、exporter のパスを向ける（node_exporter コンテナ運用の標準パターン）。
+  ```
+  # quadlet volumes
+  "/:/rootfs:ro,rslave"
+  "/proc:/host/proc:ro"
+  "/sys:/host/sys:ro"
+  ```
+  ```alloy
+  prometheus.exporter.unix "host" {
+    procfs_path = "/host/proc"
+    sysfs_path  = "/host/sys"
+    rootfs_path = "/rootfs"
+  }
+  ```
+  `rslave` は host 側のマウント変化をコンテナに伝播させるため。
+- **Confidence**: high
+- **Source**: homelab-overview の Host resources パネルで Disk % が no data だった事案（2026-09-14）。`node_filesystem_size_bytes` の mountpoint 一覧にコンテナの bind mount しか無いことを VM 直接クエリで確認。
