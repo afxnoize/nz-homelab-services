@@ -25,7 +25,13 @@ loki.source.file "adguard_querylog" {
 }
 
 // --- metrics: host node (built-in unix exporter) ---
-prometheus.exporter.unix "host" { }
+// Paths point at host mounts (nixos.nix volumes); the exporter runs in a
+// container and would otherwise report the container's own fs/proc/sys.
+prometheus.exporter.unix "host" {
+  procfs_path = "/host/proc"
+  sysfs_path  = "/host/sys"
+  rootfs_path = "/rootfs"
+}
 
 prometheus.scrape "node" {
   targets    = prometheus.exporter.unix.host.targets

@@ -192,3 +192,49 @@
 - **Solution**: ローカル残骸の unit を止める（`systemctl --user stop <svc> <svc>-ts`）。競合が消えれば、OCI 側は restart の再登録リトライで数分内に `machineAuthorized=true` に転じて自然復旧する（今回は残骸停止から約 8 分で復旧。復旧の正確な機序は未確認、confidence は下記参照）。恒久対策はローカル残骸の quadlet ファイルごと撤去。sops の `ts_authkey` は失効済みなので、次に本当に再認証が必要になったら admin console で該当 tag 付きの新 key を発行して `sops set` → `just oci-deploy`
 - **Confidence**: medium（競合→logout の因果は状況証拠。復旧が残骸停止によるものか admin console 操作によるものかは切り分けできていない）
 - **Source**: tailscale sidecar 更新作業中に OCI 側 3 ノードが logout した事案（2026-08-21）。journalctl の `machineAuthorized` 遷移と、残骸有無による被害の切り分けで確認。
+
+### K-019: コンテナ内の `prometheus.exporter.unix` は host mount なしだと filesystem metrics が無言で欠落する
+
+- **Trigger**: Alloy（や node_exporter）をコンテナで動かし、host の filesystem metrics を取ろうとしたとき
+- **Problem**: exporter はコンテナ自身の `/proc` からマウント一覧を読むため、見えるのはコンテナの overlay rootfs と少数の bind mount だけ。overlay / tmpfs はデフォルトの `fs_types_exclude` で除外されるので、`node_filesystem_*{mountpoint="/"}` が存在しなくなる。エラーは一切出ず、ダッシュボード側で Disk % が no data になって初めて気づく。CPU / メモリ / ネットワークは procfs が host 全体の値を返すため正常に見え、欠落に気づきにくい。
+- **Solution**: host の `/`・`/proc`・`/sys` を read-only でコンテナにマウントし、exporter のパスを向ける（node_exporter コンテナ運用の標準パターン）。
+  ```
+  # quadlet volumes
+  "/:/rootfs:ro,rslave"
+  "/proc:/host/proc:ro"
+  "/sys:/host/sys:ro"
+  ```
+  ```alloy
+  prometheus.exporter.unix "host" {
+    procfs_path = "/host/proc"
+    sysfs_path  = "/host/sys"
+    rootfs_path = "/rootfs"
+  }
+  ```
+  `rslave` は host 側のマウント変化をコンテナに伝播させるため。
+- **Confidence**: high
+- **Source**: homelab-overview の Host resources パネルで Disk % が no data だった事案（2026-09-14）。`node_filesystem_size_bytes` の mountpoint 一覧にコンテナの bind mount しか無いことを VM 直接クエリで確認。
+
+### K-020: ssh 経由 recipe に PromQL/LogsQL を渡すとダブルクオートが剥がれて「結果が空」に見える
+
+- **Trigger**: `just observability vm-query 'metric{label="value"}'` のように、ssh + curl をラップした recipe へクオート付きクエリを渡したとき
+- **Problem**: recipe 内の `ssh host 'curl ... "query={{query}}"'` では、query 内の `"` がリモートシェルのクオート解釈で消費され、`{label=value}` という不正な PromQL がサーバに届く。エラー JSON は `jq -r ".data.result[]"` に飲まれて出力ゼロになるため、「その metric は存在しない」と誤診する。実際には metric は存在していた。
+- **Solution**: クエリを引数ではなく stdin で渡す。`curl --data-urlencode query@-` は値を stdin から読むので、シェルのクオート解釈を一切通らない。vl-query / vm-query は修正済み。同型の recipe を新設するときも同じパターンを使う。
+  ```just
+  vm-query query="up":
+      printf '%s' {{quote(query)}} | ssh root@{{oci_host}} 'curl -sG http://127.0.0.1:8428/api/v1/query --data-urlencode query@- | jq -r ".data.result[]"'
+  ```
+- **Confidence**: high
+- **Source**: K-019 の調査中、label filter 付きクエリだけが空を返す現象で発見（2026-09-14）。同じクエリを ssh 先で直接実行すると結果が返ることで切り分け。
+
+### K-021: healthCmd に使うバイナリが image に存在するか確認する（alloy には wget/curl が無い）
+
+- **Trigger**: quadlet の `healthCmd` に `wget --spider` / `curl` を書くとき
+- **Problem**: `grafana/alloy` image (ubuntu ベース) には wget も curl も busybox も入っていない。healthCmd は exit 127 で常に失敗し、コンテナは本体が正常でも恒久的に unhealthy になる。サービス自体は動き続けるため気づきにくい。さらに `nixos-rebuild switch` はコンテナ再起動直後に fire した healthcheck の transient unit 失敗を「failed units」として拾い、デプロイが exit code 4 で失敗したように見える。
+- **Solution**: image に入っているツールで healthcheck を書く。alloy は bash があるので `/dev/tcp` で代替できる。
+  ```nix
+  healthCmd = "bash -c 'exec 3<>/dev/tcp/127.0.0.1/12345 && printf \"GET /-/healthy HTTP/1.0\\r\\n\\r\\n\" >&3 && grep -q \" 200 \" <&3'";
+  ```
+  新しい image に healthCmd を書くときは `podman exec <name> sh -c "command -v wget curl"` で先に確認する。
+- **Confidence**: high
+- **Source**: K-019 のデプロイ検証で alloy が unhealthy のまま残る現象から発見（2026-09-14）。journal に過去 2 週間以上の unhealthy 記録があり、既存バグだったことを確認。
