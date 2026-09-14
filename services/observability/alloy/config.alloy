@@ -1,9 +1,20 @@
 // --- journald ---
 loki.source.journal "system" {
   path       = "/var/log/journal"
-  forward_to = [loki.write.vl.receiver]
+  forward_to = [loki.process.journal_filter.receiver]
   labels     = { host = "oci-nix" }
   relabel_rules = loki.relabel.journal.rules
+}
+
+// Drop known-noise lines before they reach VictoriaLogs
+loki.process "journal_filter" {
+  forward_to = [loki.write.vl.receiver]
+
+  // tailscale netstack (TS_USERSPACE) logs one line per expired UDP flow;
+  // on adguard-home-ts that is every DNS query (~1.5k lines/h of session GC)
+  stage.drop {
+    expression = ".*netstack: UDP session between .* timed out.*"
+  }
 }
 
 loki.relabel "journal" {

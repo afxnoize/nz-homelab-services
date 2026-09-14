@@ -42,3 +42,13 @@ flowchart LR
 - アプリ固有ファイルログ: shared volume を Alloy にも `ro` でマウントし、`loki.source.file` で直接 tail（fluent-bit サイドカーは廃止）
 - metrics: Alloy の `prometheus.scrape` → `prometheus.remote_write` で VictoriaMetrics に push
 - マルチホスト: WSL2 ホストの Alloy は Tailnet 越しに OCI 側 VL/VM へ push
+
+## ノイズフィルタ
+
+既知のノイズ行は Alloy の `loki.process` + `stage.drop` で VictoriaLogs 到達前に落とす（journald には残るため、必要なら `journalctl` で遡れる）。drop の判断基準は「行単位で恒常的に大量発生し、かつ内容に運用判断の材料が無いこと」。単に量が多いだけのログ（querylog 等）は対象にしない。
+
+現在の drop 対象:
+
+| パターン                              | 発生源                           | 理由                                                                                                        |
+| ------------------------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `netstack: UDP session ... timed out` | tailscale sidecar (TS_USERSPACE) | UDP 擬似セッションの idle 回収通知。adguard-home-ts では DNS クエリごとに発生（約 1.5k 行/h）し、情報量ゼロ |
