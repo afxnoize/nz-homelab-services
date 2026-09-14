@@ -24,7 +24,7 @@
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "Net RX" },
+            "matcher": { "id": "byRegexp", "options": "/^Net RX/" },
             "properties": [
               { "id": "unit", "value": "Bps" },
               { "id": "min", "value": null },
@@ -50,8 +50,8 @@
           "refId": "C"
         },
         {
-          "expr": "rate(node_network_receive_bytes_total[5m])",
-          "legendFormat": "Net RX",
+          "expr": "rate(node_network_receive_bytes_total{device!~\"lo|veth.*|podman.*\"}[5m])",
+          "legendFormat": "Net RX {{device}}",
           "refId": "D"
         }
       ]
