@@ -226,3 +226,15 @@
   ```
 - **Confidence**: high
 - **Source**: K-019 の調査中、label filter 付きクエリだけが空を返す現象で発見（2026-09-14）。同じクエリを ssh 先で直接実行すると結果が返ることで切り分け。
+
+### K-021: healthCmd に使うバイナリが image に存在するか確認する（alloy には wget/curl が無い）
+
+- **Trigger**: quadlet の `healthCmd` に `wget --spider` / `curl` を書くとき
+- **Problem**: `grafana/alloy` image (ubuntu ベース) には wget も curl も busybox も入っていない。healthCmd は exit 127 で常に失敗し、コンテナは本体が正常でも恒久的に unhealthy になる。サービス自体は動き続けるため気づきにくい。さらに `nixos-rebuild switch` はコンテナ再起動直後に fire した healthcheck の transient unit 失敗を「failed units」として拾い、デプロイが exit code 4 で失敗したように見える。
+- **Solution**: image に入っているツールで healthcheck を書く。alloy は bash があるので `/dev/tcp` で代替できる。
+  ```nix
+  healthCmd = "bash -c 'exec 3<>/dev/tcp/127.0.0.1/12345 && printf \"GET /-/healthy HTTP/1.0\\r\\n\\r\\n\" >&3 && grep -q \" 200 \" <&3'";
+  ```
+  新しい image に healthCmd を書くときは `podman exec <name> sh -c "command -v wget curl"` で先に確認する。
+- **Confidence**: high
+- **Source**: K-019 のデプロイ検証で alloy が unhealthy のまま残る現象から発見（2026-09-14）。journal に過去 2 週間以上の unhealthy 記録があり、既存バグだったことを確認。
