@@ -47,6 +47,7 @@ just oci-build                # OCI NixOS ビルド確認
 just oci-rollback             # OCI NixOS ロールバック
 just oci-status               # OCI サービス状態確認
 just oci-logs <service>       # OCI サービスログ
+just oci-update-tailscale     # OCI Tailscale sidecar 一括更新
 just oci-ssh                  # OCI SSH 接続
 ```
 

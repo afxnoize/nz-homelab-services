@@ -23,3 +23,4 @@ ADR は 001〜012 まで存在（最新: ADR-012 sing-box forward proxy / 2026-0
 
 - [OCI NixOS マイグレーション設計](../../docs/superpowers/specs/2026-04-14-oci-nixos-migration-design.md) — OCI Always Free への NixOS 移行設計
 - [sing-box 選択的 forward proxy 設計](../../docs/superpowers/specs/2026-05-20-sing-box-forward-proxy-design.md) — Tailnet 内 forward proxy 設計
+- [DNS 冗長化・フィルタリング両立の検討メモ](../../docs/superpowers/specs/2026-08-21-dns-resilience-design.md) — adguard-home SPOF 対策の選択肢比較（draft・未実装）

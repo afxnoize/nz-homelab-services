@@ -1,5 +1,6 @@
 [Container]
 Image=docker.io/tailscale/tailscale:latest
+AutoUpdate=registry
 LogDriver=journald
 Volume=ollama-ts-state.volume:/var/lib/tailscale
 Environment=TS_AUTHKEY={{ .Env.ts_authkey }}
