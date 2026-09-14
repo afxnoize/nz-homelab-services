@@ -60,6 +60,12 @@ oci-status:
 oci-logs service:
     ssh root@{{oci_host}} 'journalctl -u {{service}}.service -n 50 --no-pager'
 
+# pull latest → 全 *-ts unit restart (app は Requires= で追従) → version 表示
+[doc('Tailscale sidecar 一括更新')]
+[group('oci')]
+oci-update-tailscale:
+    ssh root@{{oci_host}} 'set -e; podman pull docker.io/tailscale/tailscale:latest; units=$(systemctl list-units --no-legend --plain "*-ts.service" | cut -d" " -f1 | tr "\n" " "); echo "restarting: $units"; systemctl restart $units; for u in $units; do c="${u%.service}"; printf "%s: %s\n" "$c" "$(podman exec "$c" tailscale version | head -1)"; done'
+
 # SSH into OCI host (引数なしで対話シェル、引数ありでコマンド実行)
 [group('oci')]
 oci-ssh *args:
