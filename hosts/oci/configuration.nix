@@ -67,10 +67,10 @@ in
   };
 
   # Journald
-  services.journald.extraConfig = ''
-    SystemMaxUse=2G
-    MaxRetentionSec=180day
-  '';
+  services.journald.settings.Journal = {
+    SystemMaxUse = "2G";
+    MaxRetentionSec = "180day";
+  };
 
   # Packages
   environment.systemPackages = with pkgs; [
