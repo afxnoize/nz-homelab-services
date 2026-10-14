@@ -238,3 +238,15 @@
   新しい image に healthCmd を書くときは `podman exec <name> sh -c "command -v wget curl"` で先に確認する。
 - **Confidence**: high
 - **Source**: K-019 のデプロイ検証で alloy が unhealthy のまま残る現象から発見（2026-09-14）。journal に過去 2 週間以上の unhealthy 記録があり、既存バグだったことを確認。
+
+### K-022: nixpkgs メジャー更新は switch inhibitor で止まる場合があり、`nixos-rebuild boot` + 再起動で適用する
+
+- **Trigger**: `nix flake update` で nixpkgs を大きく上げた後に `just oci-deploy`（`nixos-rebuild switch`）を実行したとき
+- **Problem**: 26.05 → 26.11 では D-Bus 実装が `dbus` から `dbus-broker` に変わり、`Pre-switch check 'switchInhibitors' failed` で switch が拒否された。稼働中に D-Bus 実装を入れ替えると systemd が不安定になるため、これは正しい挙動。同じ更新で `services.journald.extraConfig` が廃止され、eval 時に `Failed assertions` で止まった（`services.journald.settings.Journal` に置き換える）。
+- **Solution**: eval が通ることを `just oci-build` で確認してから、`boot` で次回起動用に登録して再起動する。`NIXOS_NO_CHECK=1` での強制 switch はリモートホストでは避ける。
+  ```bash
+  nix run nixpkgs#nixos-rebuild -- boot --flake .#oci --target-host root@<host> --build-host root@<host>
+  ```
+  再起動後は Tailscale の復帰を確認する。復帰しなければ OCI コンソール（シリアル）から旧世代を選んで戻す。コンテナ起動直後は healthcheck の transient unit が failed に並ぶが、数十秒で消えるため故障ではない（K-021 と同じ現象）。
+- **Confidence**: high
+- **Source**: nixpkgs 26.11 更新時の OCI デプロイ（2026-10-14）。`boot` + 再起動後、全コンテナが healthy に戻ることを確認。
