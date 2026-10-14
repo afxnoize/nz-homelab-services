@@ -157,7 +157,7 @@
 - **Trigger**: NixOS ホスト上のコンテナサービスを `virtualisation.oci-containers` から `virtualisation.quadlet`（quadlet-nix）に移行したとき
 - **Problem**: `virtualisation.oci-containers.containers.<name>` は systemd unit を `podman-<name>.service` として生成するが、Quadlet は `.container` ファイル名から `<name>.service` を生成する（プレフィックスなし）。移行直後は新旧どちらの unit 名も参照できる状態にならず、旧名を前提にした journalctl / systemctl コマンドやラベル定義が無言で空の結果を返す。deploy 直後に「ログが止まった」「監視が外れた」ように見えるが、実体は新 unit が走っているだけ。
 - **Solution**:
-  - justfile の `oci-logs` / `oci-status` など、unit 名に `podman-` プレフィックスを決め打ちしている箇所を `<name>.service` に書き換える
+  - justfile の `oci logs` / `oci status` など、unit 名に `podman-` プレフィックスを決め打ちしている箇所を `<name>.service` に書き換える
   - sops-nix の `restartUnits = [ "podman-<name>.service" ]` を `[ "<name>.service" ]` に更新する（ADR-009 移行時にサービスごとに行う）
   - ログ・監視系の運用ツール（Alloy の `loki.source.journal` relabel など）も同タイミングで調整する
   - 混在期間中は `journalctl -u <name>.service -u podman-<name>.service ...` の両方指定で凌ぐこともできるが、順次移行していく前提ならシンプルに新名へ一括更新する方が保守しやすい
@@ -179,17 +179,17 @@
 
 ### K-017: OCI ホストの DNS は自ホスト上の adguard-home に依存しており、restart 直後に名前解決が死ぬ
 
-- **Trigger**: OCI ホストで adguard-home / adguard-home-ts コンテナを restart した直後に、ホスト上で名前解決を伴う操作（`podman pull`、`just oci-update-tailscale` の再実行など）をしたとき
+- **Trigger**: OCI ホストで adguard-home / adguard-home-ts コンテナを restart した直後に、ホスト上で名前解決を伴う操作（`podman pull`、`just oci update-tailscale` の再実行など）をしたとき
 - **Problem**: OCI ホストの tailscaled は `accept-dns` 有効で、`/etc/resolv.conf` は MagicDNS (100.100.100.100) を向いている。tailnet の global nameserver は同じホスト上で動く adguard-home コンテナなので、adguard-home(-ts) の restart 中〜tailnet 再登録完了までの間、ホスト自身の DNS が巻き添えで落ちる。`Temporary failure in name resolution` として顕在化し、pull を伴う更新作業が自己依存で失敗する。
 - **Solution**: tailnet の global nameserver に Google DNS (8.8.8.8) を追加して単一依存を解消した（2026-08-21）。ただし Tailscale の global nameserver は優先順位ではなく並列に使われるため、AdGuard のフィルタを素通りするクエリが確率的に発生するトレードオフがある。厳密なフィルタリングが必要なら、代替として OCI ホストのみ `tailscale set --accept-dns=false` にして OCI メタデータ DNS を使わせ、nameserver を adguard-home 一本に戻す構成も取れる。
 - **Confidence**: high
-- **Source**: `just oci-update-tailscale` 実行直後の再実行で `podman pull` が name resolution エラーになった事案（2026-08-21）。resolv.conf と `tailscale dns status` で依存チェーンを実機確認。
+- **Source**: `just oci update-tailscale` 実行直後の再実行で `podman pull` が name resolution エラーになった事案（2026-08-21）。resolv.conf と `tailscale dns status` で依存チェーンを実機確認。
 
 ### K-018: OCI 移行前のローカル残骸 sidecar を起動すると、OCI 側ノードのセッションが破壊される
 
 - **Trigger**: OCI へ移行済みのサービス（adguard-home / gatus / vaultwarden）のローカル quadlet 残骸、特に `-ts` sidecar を start / restart したとき
 - **Problem**: ローカル残骸の state volume は OCI 側と競合する node 識別情報を保持している。残骸 sidecar が controlplane へログイン試行を繰り返すと、OCI 側の該当ノードのセッションが無効化され logout する。再ログインは `RegisterReq → machineAuthorized=false` で拒否され、フォールバックの `TS_AUTHKEY`（sops の `ts_authkey`）も失効済みだと `invalid key: API key does not exist` で containerboot が exit し、restart loop に陥る。tailnet 側では該当サービスが offline になる（vaultwarden 到達不能・DNS 劣化など実害あり）。残骸のない grafana / sing-box は同条件（image 更新 + restart）でも無傷だったことが競合説の裏付け。
-- **Solution**: ローカル残骸の unit を止める（`systemctl --user stop <svc> <svc>-ts`）。競合が消えれば、OCI 側は restart の再登録リトライで数分内に `machineAuthorized=true` に転じて自然復旧する（今回は残骸停止から約 8 分で復旧。復旧の正確な機序は未確認、confidence は下記参照）。恒久対策はローカル残骸の quadlet ファイルごと撤去。sops の `ts_authkey` は失効済みなので、次に本当に再認証が必要になったら admin console で該当 tag 付きの新 key を発行して `sops set` → `just oci-deploy`
+- **Solution**: ローカル残骸の unit を止める（`systemctl --user stop <svc> <svc>-ts`）。競合が消えれば、OCI 側は restart の再登録リトライで数分内に `machineAuthorized=true` に転じて自然復旧する（今回は残骸停止から約 8 分で復旧。復旧の正確な機序は未確認、confidence は下記参照）。恒久対策はローカル残骸の quadlet ファイルごと撤去。sops の `ts_authkey` は失効済みなので、次に本当に再認証が必要になったら admin console で該当 tag 付きの新 key を発行して `sops set` → `just oci deploy`
 - **Confidence**: medium（競合→logout の因果は状況証拠。復旧が残骸停止によるものか admin console 操作によるものかは切り分けできていない）
 - **Source**: tailscale sidecar 更新作業中に OCI 側 3 ノードが logout した事案（2026-08-21）。journalctl の `machineAuthorized` 遷移と、残骸有無による被害の切り分けで確認。
 

@@ -26,7 +26,7 @@
 | シークレット暗号化 | SOPS + age     | `sops --encrypt / --decrypt` |
 | テンプレート展開   | gomplate       | `gomplate -f in.tmpl -o out` |
 | YAML/JSON 操作     | yq             | `yq`                         |
-| NixOS デプロイ     | nixos-rebuild  | `just oci-deploy`            |
+| NixOS デプロイ     | nixos-rebuild  | `just oci deploy`            |
 | ディスク管理       | disko          | (nixos-anywhere 経由)        |
 | NixOS シークレット | sops-nix       | (nixos-rebuild 時に自動)     |
 | Git hooks          | lefthook       | `lefthook install`           |
@@ -42,13 +42,15 @@ just vaultwarden <recipe>     # vaultwarden 操作
 just gatus <recipe>           # gatus 操作
 just ollama <recipe>          # ollama 操作 (WSL2 マシン向け)
 just observability <recipe>       # observability 操作
-just oci-deploy               # OCI NixOS デプロイ
-just oci-build                # OCI NixOS ビルド確認
-just oci-rollback             # OCI NixOS ロールバック
-just oci-status               # OCI サービス状態確認
-just oci-logs <service>       # OCI サービスログ
-just oci-update-tailscale     # OCI Tailscale sidecar 一括更新
-just oci-ssh                  # OCI SSH 接続
+just oci build                # OCI NixOS ビルド確認
+just oci deploy               # OCI NixOS デプロイ (switch)
+just oci boot                 # OCI NixOS 次回起動用に登録 (メジャー更新時、適用は再起動)
+just oci rollback             # OCI NixOS ロールバック
+just oci update-image <name>  # OCI コンテナイメージ更新 (差分があるときだけ restart)
+just oci update-tailscale     # OCI Tailscale sidecar 一括更新
+just oci status               # OCI サービス状態確認
+just oci logs <service>       # OCI サービスログ
+just oci ssh                  # OCI SSH 接続
 ```
 
 ## アーキテクチャ
@@ -117,6 +119,8 @@ docs/
         └── exposure-models.md        # 公開モデル
 hosts/
 └── oci/                              # OCI NixOS ホスト設定
+    ├── justfile                      # `just oci <recipe>` (deploy / update-image / status ...)
+    ├── scripts/update-image.sh       # `oci update-image` がホスト上で実行するスクリプト
     ├── configuration.nix             # ホスト設定
     ├── hardware-configuration.nix    # ハードウェア構成 (nixos-generate)
     ├── disko.nix                     # ディスクレイアウト

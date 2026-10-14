@@ -16,7 +16,7 @@
 
 > \* ollama は WSL2 マシン稼働。`deploy-all` 対象外、`just ollama <recipe>` で個別操作。
 >
-> \*\* observability / sing-box は OCI NixOS 稼働。`deploy-all` 対象外、デプロイは `just oci-deploy`。
+> \*\* observability / sing-box は OCI NixOS 稼働。`deploy-all` 対象外、デプロイは `just oci deploy`。
 
 ## 前提条件
 
@@ -37,7 +37,7 @@ just deploy-all
 just                  # レシピ一覧（サービス別レシピもここから辿れる）
 just deploy-all       # ホスト常駐サービスを一括 deploy
 just <service> <recipe>  # 個別サービス操作（例: just gatus restart）
-just oci-deploy       # OCI NixOS ホストへデプロイ (observability / sing-box)
+just oci deploy       # OCI NixOS ホストへデプロイ (observability / sing-box)
 ```
 
 各サービスの詳細は `services/*/README.md` を参照。

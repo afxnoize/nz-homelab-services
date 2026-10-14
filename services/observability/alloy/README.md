@@ -15,11 +15,11 @@
 
 ```bash
 # ヘルスチェック
-just oci-ssh 'curl -s http://127.0.0.1:12345/-/healthy'
+just oci ssh 'curl -s http://127.0.0.1:12345/-/healthy'
 
 # scrape targets 確認
-just oci-ssh 'curl -s http://127.0.0.1:12345/api/v1/targets'
+just oci ssh 'curl -s http://127.0.0.1:12345/api/v1/targets'
 
 # config reload
-just oci-ssh 'curl -X POST http://127.0.0.1:12345/-/reload'
+just oci ssh 'curl -X POST http://127.0.0.1:12345/-/reload'
 ```

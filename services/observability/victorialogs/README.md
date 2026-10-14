@@ -14,11 +14,11 @@
 
 ```bash
 # ヘルスチェック
-just oci-ssh 'curl -s http://127.0.0.1:9428/health'
+just oci ssh 'curl -s http://127.0.0.1:9428/health'
 
 # 直近 5 分のログ件数
-just oci-ssh 'curl -sG http://127.0.0.1:9428/select/logsql/query --data-urlencode "query=_time:5m" | wc -l'
+just oci ssh 'curl -sG http://127.0.0.1:9428/select/logsql/query --data-urlencode "query=_time:5m" | wc -l'
 
 # ディスク使用量
-just oci-ssh 'du -sh /var/lib/containers/storage/volumes/victorialogs-data'
+just oci ssh 'du -sh /var/lib/containers/storage/volumes/victorialogs-data'
 ```

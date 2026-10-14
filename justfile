@@ -9,6 +9,9 @@ mod ollama 'services/ollama'          # WSL2 machine — not in deploy-all
 mod observability 'services/observability'
 mod sing-box 'services/sing-box'
 
+# OCI NixOS host (deploy / boot / rollback / update-image / status / logs / ssh)
+mod oci 'hosts/oci'
+
 ####################
 # Orchestrate
 ####################
@@ -28,45 +31,3 @@ status-all:
     just vaultwarden status
     just gatus status
     just adguard-home status
-
-####################
-# OCI NixOS host
-####################
-
-oci_host := `sops -d --extract '["oci_host"]' hosts/oci/secrets.yaml`
-
-# Deploy NixOS configuration to OCI host
-[group('oci')]
-oci-deploy:
-    nix run nixpkgs#nixos-rebuild -- switch --flake .#oci --target-host root@{{oci_host}} --build-host root@{{oci_host}}
-
-# Build NixOS configuration without deploying
-[group('oci')]
-oci-build:
-    nix run nixpkgs#nixos-rebuild -- build --flake .#oci --target-host root@{{oci_host}} --build-host root@{{oci_host}}
-
-# Rollback to previous NixOS generation
-[group('oci')]
-oci-rollback:
-    nix run nixpkgs#nixos-rebuild -- switch --flake .#oci --target-host root@{{oci_host}} --rollback --build-host root@{{oci_host}}
-
-# Show status of OCI services (oci-containers: podman-*.service / Quadlet: <name>.service from /etc/containers/systemd/)
-[group('oci')]
-oci-status:
-    ssh root@{{oci_host}} 'quadlet_units=$(find /etc/containers/systemd -maxdepth 1 -name "*.container" -exec basename -s .container {} \; 2>/dev/null | sed "s/\$/.service/" | tr "\n" " "); systemctl list-units --no-pager "podman-*" $quadlet_units'
-
-# Show logs for an OCI service (Quadlet unit "<name>.service")
-[group('oci')]
-oci-logs service:
-    ssh root@{{oci_host}} 'journalctl -u {{service}}.service -n 50 --no-pager'
-
-# pull latest → 全 *-ts unit restart (app は Requires= で追従) → version 表示
-[doc('Tailscale sidecar 一括更新')]
-[group('oci')]
-oci-update-tailscale:
-    ssh root@{{oci_host}} 'set -e; podman pull docker.io/tailscale/tailscale:latest; units=$(systemctl list-units --no-legend --plain "*-ts.service" | cut -d" " -f1 | tr "\n" " "); echo "restarting: $units"; systemctl restart $units; for u in $units; do c="${u%.service}"; printf "%s: %s\n" "$c" "$(podman exec "$c" tailscale version | head -1)"; done'
-
-# SSH into OCI host (引数なしで対話シェル、引数ありでコマンド実行)
-[group('oci')]
-oci-ssh *args:
-    ssh root@{{oci_host}} {{args}}
