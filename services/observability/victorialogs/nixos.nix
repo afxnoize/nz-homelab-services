@@ -19,11 +19,7 @@
       volumes = [
         "victorialogs-data:/storage"
       ];
-      healthCmd = "wget --spider -q http://127.0.0.1:${toString vars.ports.vl}/health || exit 1";
-      healthInterval = "30s";
-      healthTimeout = "10s";
-      healthRetries = 3;
-      healthStartPeriod = "30s";
+      # No healthCmd: the image ships neither sh nor wget since 20261001, so any CMD-SHELL probe fails (K-023)
       logDriver = "journald";
     };
     serviceConfig.Restart = "always";
