@@ -1,0 +1,51 @@
+_default:
+    @just --list
+
+oci_host := `sops -d --extract '["oci_host"]' secrets.yaml`
+flake := "../..#oci"
+
+# Build NixOS configuration on the OCI host without activating it
+[group('deploy')]
+build:
+    nix run nixpkgs#nixos-rebuild -- build --flake {{flake}} --target-host root@{{oci_host}} --build-host root@{{oci_host}}
+
+# Build and activate NixOS configuration (rejected by switch inhibitors on major upgrades, use boot then, K-022)
+[group('deploy')]
+deploy:
+    nix run nixpkgs#nixos-rebuild -- switch --flake {{flake}} --target-host root@{{oci_host}} --build-host root@{{oci_host}}
+
+# Register NixOS configuration for the next boot; reboot the host afterwards to apply (K-022)
+[group('deploy')]
+boot:
+    nix run nixpkgs#nixos-rebuild -- boot --flake {{flake}} --target-host root@{{oci_host}} --build-host root@{{oci_host}}
+
+# Switch back to the previous NixOS generation
+[group('deploy')]
+rollback:
+    nix run nixpkgs#nixos-rebuild -- switch --flake {{flake}} --target-host root@{{oci_host}} --rollback --build-host root@{{oci_host}}
+
+# Pull the image of a running container and restart it only if the image changed (old image kept as localhost/<name>:pre-<date>)
+[doc('Update one container image, e.g. just oci update-image vaultwarden')]
+[group('deploy')]
+update-image name:
+    ssh root@{{oci_host}} bash -s -- {{quote(name)}} < scripts/update-image.sh
+
+# Pull tailscale image, restart every *-ts unit and print versions
+[group('deploy')]
+update-tailscale:
+    ssh root@{{oci_host}} 'set -e; podman pull docker.io/tailscale/tailscale:latest; units=$(systemctl list-units --no-legend --plain "*-ts.service" | cut -d" " -f1 | tr "\n" " "); echo "restarting: $units"; systemctl restart $units; for u in $units; do c="${u%.service}"; printf "%s: %s\n" "$c" "$(podman exec "$c" tailscale version | head -1)"; done'
+
+# Show status of OCI services (Quadlet units from /etc/containers/systemd/)
+[group('observe')]
+status:
+    ssh root@{{oci_host}} 'quadlet_units=$(find /etc/containers/systemd -maxdepth 1 -name "*.container" -exec basename -s .container {} \; 2>/dev/null | sed "s/\$/.service/" | tr "\n" " "); systemctl list-units --no-pager "podman-*" $quadlet_units'
+
+# Show logs for an OCI service (Quadlet unit "<name>.service")
+[group('observe')]
+logs service count="50":
+    ssh root@{{oci_host}} 'journalctl -u {{service}}.service -n {{count}} --no-pager'
+
+# SSH into OCI host (interactive shell without args, runs the command with args)
+[group('dev')]
+ssh *args:
+    ssh root@{{oci_host}} {{args}}

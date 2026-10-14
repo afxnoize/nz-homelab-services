@@ -16,7 +16,7 @@ OCI 専用 (NixOS Quadlet) のため、`quadlet/` ディレクトリや手書き
 
 1. Tailscale admin console で sing-box 用 authkey を発行
 2. `sops services/sing-box/secrets.yaml` で `ts_authkey` を記入
-3. `just oci-deploy` で NixOS configuration を適用
+3. `just oci deploy` で NixOS configuration を適用
 
 ## クライアント側設定
 
@@ -50,14 +50,14 @@ sing-box (proxy)
 
 | コマンド                    | 説明                                         |
 | --------------------------- | -------------------------------------------- |
-| `just oci-deploy`           | NixOS configuration 反映 (sing-box デプロイ) |
+| `just oci deploy`           | NixOS configuration 反映 (sing-box デプロイ) |
 | `just sing-box status`      | sing-box / sing-box-ts の状態                |
 | `just sing-box logs`        | 直近 50 件のログ (sing-box + sidecar)        |
 | `just sing-box logs 100`    | 直近 N 件のログ (件数指定)                   |
 | `just sing-box logs-follow` | ログをリアルタイムで follow                  |
 | `just sing-box update`      | コンテナイメージを更新 (podman auto-update)  |
 
-> **再起動:** OCI ホスト上で `systemctl restart sing-box.service` (sidecar ごと再起動する場合は `systemctl restart sing-box-ts.service`) を直接実行する。`just oci-ssh` でホストに入ってから実行。
+> **再起動:** OCI ホスト上で `systemctl restart sing-box.service` (sidecar ごと再起動する場合は `systemctl restart sing-box-ts.service`) を直接実行する。`just oci ssh` でホストに入ってから実行。
 
 ## 関連ドキュメント
 

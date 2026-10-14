@@ -15,11 +15,11 @@
 
 ```bash
 # ヘルスチェック
-just oci-ssh 'curl -s http://127.0.0.1:8428/health'
+just oci ssh 'curl -s http://127.0.0.1:8428/health'
 
 # scrape target 数
-just oci-ssh 'curl -sG http://127.0.0.1:8428/api/v1/query --data-urlencode "query=up" | jq ".data.result | length"'
+just oci ssh 'curl -sG http://127.0.0.1:8428/api/v1/query --data-urlencode "query=up" | jq ".data.result | length"'
 
 # ディスク使用量
-just oci-ssh 'du -sh /var/lib/containers/storage/volumes/victoriametrics-data'
+just oci ssh 'du -sh /var/lib/containers/storage/volumes/victoriametrics-data'
 ```

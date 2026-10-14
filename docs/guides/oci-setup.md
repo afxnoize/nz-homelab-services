@@ -1,6 +1,6 @@
 # OCI NixOS 構築 & デプロイ手順
 
-OCI Always Free (Ampere A1 aarch64) に NixOS をインストールし、`just oci-deploy` でサービスをデプロイするまでの手順。
+OCI Always Free (Ampere A1 aarch64) に NixOS をインストールし、`just oci deploy` でサービスをデプロイするまでの手順。
 
 ## 前提条件
 
@@ -153,12 +153,12 @@ sops hosts/oci/secrets.yaml
 # oci_host を Tailscale 上のホスト名に変更
 ```
 
-これ以降、`just oci-ssh` や `just oci-deploy` が Tailscale 経由で動作する。
+これ以降、`just oci ssh` や `just oci deploy` が Tailscale 経由で動作する。
 
 ## 9. Tailscale 経由の SSH 確認
 
 ```bash
-just oci-ssh
+just oci ssh
 ```
 
 パブリック IP ではなく Tailscale 経由で接続できることを確認する。
@@ -166,7 +166,7 @@ just oci-ssh
 ## 10. 初回デプロイ
 
 ```bash
-just oci-deploy
+just oci deploy
 ```
 
 内部的には以下が実行される:
@@ -185,25 +185,30 @@ nix run nixpkgs#nixos-rebuild -- switch \
 ## 11. サービス起動確認
 
 ```bash
-just oci-status
+just oci status
 ```
 
 `podman-*` の systemd ユニットが active であることを確認する。個別のログは:
 
 ```bash
-just oci-logs <service>   # e.g. just oci-logs adguard-home
+just oci logs <service>   # e.g. just oci logs adguard-home
 ```
 
 ## 日常の運用コマンド
 
-| コマンド                  | 用途                           |
-| ------------------------- | ------------------------------ |
-| `just oci-deploy`         | configuration.nix の変更を反映 |
-| `just oci-build`          | ビルドのみ (デプロイしない)    |
-| `just oci-rollback`       | 前世代にロールバック           |
-| `just oci-status`         | コンテナの状態確認             |
-| `just oci-logs <service>` | サービスログ (直近 50 行)      |
-| `just oci-ssh`            | SSH 接続                       |
+| コマンド                       | 用途                                                                |
+| ------------------------------ | ------------------------------------------------------------------- |
+| `just oci deploy`              | configuration.nix の変更を反映 (switch)                             |
+| `just oci boot`                | 次回起動用に登録 (switch inhibitor で拒否されるメジャー更新、K-022) |
+| `just oci build`               | ビルドのみ (デプロイしない)                                         |
+| `just oci rollback`            | 前世代にロールバック                                                |
+| `just oci update-image <name>` | コンテナイメージを更新 (差分があるときだけ restart)                 |
+| `just oci update-tailscale`    | Tailscale sidecar を一括更新                                        |
+| `just oci status`              | コンテナの状態確認                                                  |
+| `just oci logs <service>`      | サービスログ (直近 50 行)                                           |
+| `just oci ssh`                 | SSH 接続                                                            |
+
+`update-image` は旧イメージを `localhost/<name>:pre-<日付>` として残す。失敗時は、そのタグを `:latest` に付け直して restart すれば戻せる (DB を持つサービスはスキーマ移行後は戻せないため、更新前にバックアップを取る)。
 
 ## 既知の注意点
 

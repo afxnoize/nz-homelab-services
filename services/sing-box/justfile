@@ -4,13 +4,13 @@ _default:
 set dotenv-load := false
 
 # NOTE: sing-box is managed by NixOS (rootful Podman Quadlet).
-# Deployment is done via `just oci-deploy` at the repo root.
+# Deployment is done via `just oci deploy` at the repo root.
 
 ####################
 # Observe
 ####################
 
-# Show service status (run on OCI host via just oci-ssh)
+# Show service status (run on OCI host via just oci ssh)
 [group('observe')]
 status:
     -systemctl status sing-box-ts sing-box --no-pager

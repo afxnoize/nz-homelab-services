@@ -28,8 +28,8 @@ just observability vm-query        # VM 直接クエリ (up)
 ## デプロイ
 
 ```bash
-just oci-deploy                    # NixOS rebuild (observability 含む)
-just oci-status                    # 全ユニット確認
+just oci deploy                    # NixOS rebuild (observability 含む)
+just oci status                    # 全ユニット確認
 ```
 
 ## Secrets ローテーション
@@ -40,7 +40,7 @@ just oci-status                    # 全ユニット確認
 cd services/observability
 sops secrets.yaml
 # grafana.admin_password を変更して保存
-just oci-deploy
+just oci deploy
 ```
 
 ### Tailscale authkey
@@ -50,7 +50,7 @@ Tailscale admin console で新しい reusable authkey を発行し、`secrets.ya
 ```bash
 sops secrets.yaml
 # grafana_ts.ts_authkey を変更して保存
-just oci-deploy
+just oci deploy
 ```
 
 ## 関連ドキュメント
