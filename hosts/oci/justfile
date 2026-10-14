@@ -46,6 +46,7 @@ logs service count="50":
     ssh root@{{oci_host}} 'journalctl -u {{service}}.service -n {{count}} --no-pager'
 
 # SSH into OCI host (interactive shell without args, runs the command with args)
+# args is passed as one quoted string so ';' and '|' run on the host, not locally
 [group('dev')]
 ssh *args:
-    ssh root@{{oci_host}} {{args}}
+    ssh root@{{oci_host}} {{quote(args)}}
