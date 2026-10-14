@@ -250,3 +250,11 @@
   再起動後は Tailscale の復帰を確認する。復帰しなければ OCI コンソール（シリアル）から旧世代を選んで戻す。コンテナ起動直後は healthcheck の transient unit が failed に並ぶが、数十秒で消えるため故障ではない（K-021 と同じ現象）。
 - **Confidence**: high
 - **Source**: nixpkgs 26.11 更新時の OCI デプロイ（2026-10-14）。`boot` + 再起動後、全コンテナが healthy に戻ることを確認。
+
+### K-023: `:latest` の上流イメージが slim 化すると healthCmd が無言で壊れる（victoria-logs から sh / wget が消えた）
+
+- **Trigger**: `:latest` のイメージを更新した直後に、healthcheck 付きコンテナが `unhealthy` になったとき
+- **Problem**: victoria-logs の `20261001` ビルドは `sh` も `wget` も含まない。`healthCmd = "wget --spider ..."` は CMD-SHELL で実行されるため、`executable file sh not found` で常に exit 1 になる。サービス本体は正常で、`/health` は 200 を返す。`just oci update-image` は `not healthy after restart` で exit 1 し、`systemctl --failed` に healthcheck の transient unit が残る。旧イメージ（4月ビルド）には busybox の wget があり、更新前は healthy だった。K-021 と同種で、こちらは上流の更新によって後から壊れる。
+- **Solution**: コンテナ内で HTTP を叩く手段がないため、victorialogs の healthCmd を外した（死活は外形監視で補う）。更新後に `unhealthy` になったら、まず `podman exec <name> sh -c 'command -v wget'` でツールの有無を確認する。同じ `wget` 依存の victoriametrics / grafana も、次の更新で同じ状態になりうる。その場合は外すか、イメージ内のツールで書き直す。
+- **Confidence**: high
+- **Source**: 全イメージ更新時（2026-10-14）。victorialogs のみ unhealthy となり、`curl http://127.0.0.1:9428/health` が 200 を返すこと、旧イメージに `/usr/bin/wget` があることで切り分け。
