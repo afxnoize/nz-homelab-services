@@ -15,6 +15,9 @@ in
       networks = [ "host" ];
       exec = [
         "run"
+        # stats.grafana.org is blocked by AdGuard (answers 0.0.0.0 / ::), so the
+        # usage report only produced a recurring "failed to report usage" warning
+        "--disable-reporting"
         "--server.http.listen-addr=127.0.0.1:${toString vars.ports.alloy}"
         "/etc/alloy/config.alloy"
       ];
