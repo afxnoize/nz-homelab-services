@@ -11,6 +11,10 @@
 | Alloy self (/metrics)          | VM   | prometheus.scrape "alloy"         |
 | AdGuard querylog (M4 で有効化) | VL   | loki.source.file (コメントアウト) |
 
+## 設定メモ
+
+`--disable-reporting` で Grafana への usage report を無効化している。送信先 `stats.grafana.org` は AdGuard の `||stats.grafana.org^` ルールでブロックされ `0.0.0.0` / `::` に解決されるため、有効のままだと数時間おきに `failed to report usage` が warn で出続ける。
+
 ## トラブルシュート
 
 ```bash
