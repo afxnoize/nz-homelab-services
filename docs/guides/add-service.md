@@ -43,6 +43,15 @@ mod <name> 'services/<name>'
 
 `deploy-all` / `status-all` が定義されていれば、そこにも追加する。
 
+## secrets.yaml の宛先
+
+`.sops.yaml` では、OCI の公開鍵を入れるサービスを 1 つ目のルールの許可リストで管理している。新しい `secrets.yaml` は、リストに載せない限りローカル鍵のみで暗号化される。
+
+- WSL2 など非 NixOS ホストだけで使うサービス: 何もしなくていい。
+- OCI NixOS ホストに載せるサービス (`nixos.nix` で `sopsFile = ./secrets.yaml` を使うもの): `secrets.yaml` を作る前に、1 つ目のルールの `path_regex` にサービス名を足す。足し忘れると OCI の鍵では復号できず、sops-nix の展開で失敗する。作成済みのファイルなら `sops updatekeys` をかけて宛先を揃える。
+
+OCI に載せないサービスの秘密を OCI 鍵で復号できる状態にしない、というのがこの運用の理由。詳細は [oci-setup.md](oci-setup.md) の 6b。
+
 ## ドキュメント更新
 
 AGENTS.md の機能概要・リポジトリ構成に追記する（同一コミット）。

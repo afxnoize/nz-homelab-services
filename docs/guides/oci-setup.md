@@ -67,7 +67,7 @@ ssh root@<PUBLIC_IP>
 
 ## 6. OCI 専用の age 鍵を生成・配置
 
-ローカルと OCI で同じ age 秘密鍵を共有しない。ホストごとに鍵ペアを分離することで、片方が漏洩しても他方のシークレットは守られる。
+ローカルと OCI で同じ age 秘密鍵を共有しない。ただし鍵ペアを分けるだけでは足りない。OCI の公開鍵を宛先に入れたファイルは、OCI の秘密鍵で復号できる。OCI に載せないサービスの `secrets.yaml` まで宛先に入れると、OCI が侵害されたときにバックアップ用の B2 認証情報まで読まれる。宛先は OCI が実際に復号するファイルに限る (6b)。
 
 ### 6a. OCI 専用の鍵ペアを生成
 
@@ -82,29 +82,42 @@ age-keygen -o /tmp/oci-age.key
 
 ```yaml
 creation_rules:
-  - path_regex: secrets\.yaml$
+  # OCI にデプロイするサービス: ローカル + OCI
+  - path_regex: (^|/)services/(adguard-home|vaultwarden|gatus|observability|sing-box)/secrets\.yaml$
     age: >-
       age1xxxx...,
       age1yyyy...
+  # それ以外 (hosts/oci, backup-kopia-b2, ollama, 新規サービス): ローカルのみ
+  - path_regex: secrets\.yaml$
+    age: age1xxxx...
 ```
 
-1 行目がローカル用、2 行目が OCI 用。sops は両方の公開鍵で Data Encryption Key を包むため、どちらの秘密鍵でも復号できる。
+`age1xxxx...` がローカル用、`age1yyyy...` が OCI 用。1 つ目のルールに一致するファイルは、sops が両方の公開鍵で Data Encryption Key を包むため、どちらの秘密鍵でも復号できる。
+
+- ルールは上から順に評価され、最初に一致したものだけが使われる。包括ルールを先頭に置くと許可リストが効かなくなる
+- `hosts/oci/secrets.yaml` は `hosts/oci/justfile` がローカルで読むだけで、OCI 上では復号しない。`backup-kopia-b2` と `ollama` は OCI に載せない。この 3 つがローカルのみになる理由はそこにある
+- ルールが効くのは新規作成時と `sops updatekeys` 時だけ。既存ファイルの宛先は `updatekeys` をかけるまで変わらない
 
 ### 6c. 既存の secrets.yaml を再暗号化
 
-`.sops.yaml` を更新したら、既存の暗号化ファイルを新しい鍵構成で再暗号化する。
+`.sops.yaml` を更新したら、既存の暗号化ファイルに `sops updatekeys` をかけて宛先をルールに揃える。`updatekeys` は 1 回に 1 ファイルしか受け付けない。
 
 ```bash
-# 念のためバックアップ
-cp hosts/oci/secrets.yaml hosts/oci/secrets.yaml.bak
-
-# 鍵構成を更新 (中身は変わらず、暗号化ヘッダだけ更新される)
+# 1 件目は -y を付けずに、追加・削除される宛先を目で確認する
 sops updatekeys hosts/oci/secrets.yaml
 
-# 各サービスの secrets.yaml も同様に
-sops updatekeys services/gatus/secrets.yaml
-# ... 他のサービスも同様
+# 残りは確認なしで
+for f in services/*/secrets.yaml; do sops updatekeys -y "$f"; done
+
+# 宛先の数を確認する。許可リストの 5 サービスは 2、それ以外は 1
+for f in hosts/oci/secrets.yaml services/*/secrets.yaml; do
+  echo "$(grep -c 'recipient: ' "$f") $f"
+done
 ```
+
+値は変わらず、`sops.age` の宛先リストだけが更新される。バックアップは git で足りる。`.bak` を作ると、旧い宛先のままの暗号文が手元に残る。
+
+git 履歴には旧い宛先の暗号文が残る。宛先から外した鍵が漏れた疑いがあるときは、`updatekeys` だけでは足りず、シークレットの値そのものを入れ替える。
 
 ### 6d. OCI に秘密鍵を配置
 
