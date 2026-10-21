@@ -1,5 +1,7 @@
 creation_rules:
-  - path_regex: secrets\.yaml$
+  - path_regex: (^|/)services/(adguard-home|vaultwarden|gatus|observability|sing-box)/secrets\.yaml$
     age: >-
       age1juuhykhva94kwg6ajntxk366zlpvwr0rxfcnkwkgmwmzm2qhg4ls97yeaz,
       age19mj603f9k6kkywzzdnq0rpqxu45yw3mjgypy9pwflyn62l90257q24s59d
+  - path_regex: secrets\.yaml$
+    age: age1juuhykhva94kwg6ajntxk366zlpvwr0rxfcnkwkgmwmzm2qhg4ls97yeaz
